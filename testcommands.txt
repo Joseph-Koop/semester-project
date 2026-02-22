@@ -16,13 +16,13 @@ READ JSON
 
 valid:
 
-BODY='{"studio":"4", "trainer":"Joseph", "capacity_limit":25, "membership_tier":"standard", "name":"Gymnastics", "status":"Ongoing"}'
+BODY='{"studio_id":4, "trainer_id":3, "capacity_limit":25, "membership_tier":"standard", "name":"Gymnastics", "terminated":true}'
 curl -i -d "$BODY" localhost:4000/classes/post
 
 
 errors:
 
-BODY='{"location":"4", "trainer":"Joseph", "limit":25, "membership":"standard", "name":"Gymnastics", "status":"Ongoing"}'
+BODY='{"location":4, "trainer":3, "limit":25, "membership":"standard", "name":"Gymnastics", "terminated":false}'
 curl -i -d "$BODY" localhost:4000/classes/post
 
 BODY=''

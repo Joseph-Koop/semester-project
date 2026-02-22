@@ -11,6 +11,7 @@ import (
 	"database/sql"
 
 	_ "github.com/lib/pq"
+    "github.com/Joseph-Koop/json-project/internal/data"
 )
 
 const appVersion = "1.0.0"
@@ -26,6 +27,7 @@ type serverConfig struct {
 type applicationDependencies struct {
     config serverConfig
     logger *slog.Logger
+    classModel data.ClassModel
 }
 
 
@@ -57,6 +59,7 @@ func main() {
 	appInstance := &applicationDependencies {
         config: settings,
         logger: logger,
+        classModel: data.ClassModel {DB: db},
     }
 
 	apiServer := &http.Server {

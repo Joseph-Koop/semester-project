@@ -1,6 +1,8 @@
 package data
 
 import (
+  "context"
+  "database/sql"
   "time"
   "github.com/Joseph-Koop/json-project/internal/validator"
 )
@@ -8,29 +10,57 @@ import (
 // each name begins with uppercase so that they are exportable/public
 type Class struct {
     ID int64                  `json:"id"`
-    Studio  string            `json:"studio"`
-    Trainer  string           `json:"trainer"`
+    Studio_id  int64            `json:"studio_id"`
+    Trainer_id  int64           `json:"trainer_id"`
     Capacity_limit  int64     `json:"capacity_limit"`
     Membership_tier  string   `json:"membership_tier"`
     Name  string              `json:"name"`
-    Status  string            `json:"status"`
+    Terminated  bool            `json:"terminated"`
     CreatedAt  time.Time      `json:"-"`
-    //Version?
+    Version int32             `json:"version"`
 } 
 
 // Create a function that performs the validation checks
 func ValidateClass(v *validator.Validator, class *Class) {
-    v.Check(class.Studio != "", "studio", "Must be provided.")                                  // check if the Studio field is empty
-    v.Check(class.Trainer != "", "trainer", "Must be provided.")                                // check if the Trainer field is empty
-    v.Check(class.Capacity_limit > 0, "capacity_limit", "Must be greater than 0.")              // check if the Capacity_limit field 0 or less
-    v.Check(class.Membership_tier != "", "membership_tier", "Must be provided.")                // check if the Membership_tier field is empty
-    v.Check(class.Name != "", "name", "Must be provided.")                                      // check if the Name field is empty
-    v.Check(class.Status != "", "status", "Must be provided.")                                  // check if the Status field is empty
+    v.Check(class.Studio_id != 0, "studio_id", "Must be provided.")                                  // check if the Studio field is 0 or less
 
-    v.Check(len(class.Studio) <= 50, "studio", "Must not be more than 50 bytes long.")                      // check if the Studio field is bigger than 50 characters
-    v.Check(len(class.Trainer) <= 50, "trainer", "Must not be more than 50 bytes long.")                    // check if the Trainer field is bigger than 50 characters
-    v.Check(class.Capacity_limit <= 100, "capacity_limit", "Must be less than or equal to 100.")            // check if the Capacity_limit field is bigger than 100
-    v.Check(len(class.Membership_tier) <= 50, "membership_tier", "Must not be more than 50 bytes long.")    // check if the Membership_tier field is bigger than 50 characters
-    v.Check(len(class.Name) <= 50, "name", "Must not be more than 50 bytes long.")                          // check if the Name field is bigger than 50 characters
-    v.Check(len(class.Status) <= 50, "status", "Must not be more than 50 bytes long.")                      // check if the Status field is bigger than 50 characters
+    v.Check(class.Trainer_id != 0, "trainer_id", "Must be provided.")                                // check if the Trainer field is 0 or less
+
+    v.Check(class.Capacity_limit > 0, "capacity_limit", "Must be greater than 0.")                    // check if the Capacity_limit field 0 or less
+    v.Check(class.Capacity_limit <= 100, "capacity_limit", "Must be less than or equal to 100.")      // check if the Capacity_limit field is bigger than 100
+
+    v.Check(class.Membership_tier == "basic" || class.Membership_tier == "standard" || class.Membership_tier == "premium", "membership_tier", "Must be provided.")                // check if the Membership_tier field matches one of the options
+    
+    v.Check(class.Name != "", "name", "Must be provided.")                                      // check if the Name field is empty
+    v.Check(len(class.Name) <= 50, "name", "Must not be more than 50 bytes long.")              // check if the Name field is bigger than 50 characters
+
+    v.Check(class.Terminated == false || class.Terminated == true, "terminated", "Must be provided.")       // check if the Status field is either true of ralse
+
+}
+
+// A ClassModel expects a connection pool
+type ClassModel struct {
+    DB *sql.DB
+}
+
+// Insert a new row in the class table
+// Expects a pointer to the actual class
+func (c ClassModel) Insert(class *Class) error {
+   // the SQL query to be executed against the database table
+    query := `
+        INSERT INTO classes (studio_id, trainer_id, capacity_limit, membership_tier, name, terminated)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING id, created_at, version
+        `
+  // the actual values to replace $1, and $2
+   args := []any{class.Studio_id, class.Trainer_id, class.Capacity_limit, class.Membership_tier, class.Name, class.Terminated}
+   // Create a context with a 3-second timeout. No database
+// operation should take more than 3 seconds or we will quit it
+   ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+   defer cancel()
+// execute the query against the comments database table. We ask for the the
+// id, created_at, and version to be sent back to us which we will use
+// to update the Comment struct later on 
+   return c.DB.QueryRowContext(ctx, query, args...).Scan(&class.ID, &class.CreatedAt, &class.Version)
+
 }

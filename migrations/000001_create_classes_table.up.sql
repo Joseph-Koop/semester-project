@@ -8,14 +8,18 @@ CREATE TYPE day_type AS ENUM ('sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat');
 CREATE TABLE IF NOT EXISTS gyms (
     id SERIAL PRIMARY KEY,
     location VARCHAR(255) NOT NULL,
-    name VARCHAR(150) NOT NULL
+    name VARCHAR(150) NOT NULL,
+    created_at TIME NOT NULL DEFAULT NOW(),
+    version INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE IF NOT EXISTS studios (
     id SERIAL PRIMARY KEY,
     gym_id INTEGER NOT NULL REFERENCES gyms(id) ON DELETE CASCADE,
     name VARCHAR(150) NOT NULL,
-    access access_type NOT NULL
+    access access_type NOT NULL,
+    created_at TIME NOT NULL DEFAULT NOW(),
+    version INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE IF NOT EXISTS trainers (
@@ -23,7 +27,9 @@ CREATE TABLE IF NOT EXISTS trainers (
     name VARCHAR(150) NOT NULL,
     address TEXT,
     phone VARCHAR(30),
-    email VARCHAR(150) UNIQUE
+    email VARCHAR(150) UNIQUE,
+    created_at TIME NOT NULL DEFAULT NOW(),
+    version INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE IF NOT EXISTS classes (
@@ -33,14 +39,18 @@ CREATE TABLE IF NOT EXISTS classes (
     capacity_limit INTEGER NOT NULL CHECK (capacity_limit > 0),
     membership_tier membership_tier_type NOT NULL,
     name VARCHAR(100) NOT NULL,
-    terminated BOOLEAN DEFAULT FALSE
+    terminated BOOLEAN DEFAULT FALSE,
+    created_at TIME NOT NULL DEFAULT NOW(),
+    version INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
     id SERIAL PRIMARY KEY,
     class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
     day day_type NOT NULL,
-    time TIME NOT NULL
+    time TIME NOT NULL,
+    created_at TIME NOT NULL DEFAULT NOW(),
+    version INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE IF NOT EXISTS members (
@@ -50,7 +60,9 @@ CREATE TABLE IF NOT EXISTS members (
     phone VARCHAR(30),
     email VARCHAR(150) UNIQUE,
     membership_tier membership_tier_type NOT NULL,
-    expiry_date DATE NOT NULL
+    expiry_date DATE NOT NULL,
+    created_at TIME NOT NULL DEFAULT NOW(),
+    version INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE IF NOT EXISTS registrations (
@@ -58,12 +70,16 @@ CREATE TABLE IF NOT EXISTS registrations (
     member_id INTEGER NOT NULL REFERENCES members(id) ON DELETE CASCADE,
     class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
     status registration_status_type NOT NULL DEFAULT 'active',
-    UNIQUE (member_id, class_id)
+    UNIQUE (member_id, class_id),
+    created_at TIME NOT NULL DEFAULT NOW(),
+    version INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE IF NOT EXISTS attendance (
     id SERIAL PRIMARY KEY,
     registration_id INTEGER NOT NULL REFERENCES registrations(id) ON DELETE CASCADE,
     session_id INTEGER NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-    UNIQUE (registration_id, session_id)
+    UNIQUE (registration_id, session_id),
+    created_at TIME NOT NULL DEFAULT NOW(),
+    version INTEGER NOT NULL DEFAULT 1
 );
