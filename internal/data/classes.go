@@ -3,6 +3,7 @@ package data
 import (
   "context"
   "database/sql"
+  "errors"
   "time"
   "github.com/Joseph-Koop/json-project/internal/validator"
 )
@@ -63,4 +64,38 @@ func (c ClassModel) Insert(class *Class) error {
 // to update the Comment struct later on 
    return c.DB.QueryRowContext(ctx, query, args...).Scan(&class.ID, &class.CreatedAt, &class.Version)
 
+}
+
+
+// Get a specific Comment from the comments table
+func (c ClassModel) Get(id int64) (*Class, error) {
+   // check if the id is valid
+    if id < 1 {
+        return nil, ErrRecordNotFound
+    }
+   // the SQL query to be executed against the database table
+    query := `
+        SELECT *
+        FROM classes
+        WHERE id = $1
+      `
+	// declare a variable of type Class to store the returned class
+   var class Class
+
+	// Set a 3-second context/timer
+	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	defer cancel()
+
+	err := c.DB.QueryRowContext(ctx, query, id).Scan (&class.ID, &class.Studio_id, &class.Trainer_id, &class.Capacity_limit, &class.Membership_tier, &class.Name, &class.Terminated, &class.CreatedAt, &class.Version,)
+
+	// check for which type of error
+	if err != nil {
+		switch {
+			case errors.Is(err, sql.ErrNoRows):
+				return nil, ErrRecordNotFound
+			default:
+				return nil, err
+			}
+		}
+	return &class, nil
 }

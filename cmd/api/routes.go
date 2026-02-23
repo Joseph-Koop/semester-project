@@ -15,6 +15,7 @@ func (a *applicationDependencies) routes() http.Handler {
 
 	// setup routes
 	router.HandlerFunc(http.MethodGet, "/classes", a.viewClassHandler)
+	router.HandlerFunc(http.MethodGet, "/classes/:id", a.displayClassHandler)
 	router.HandlerFunc(http.MethodPost, "/classes/post", a.postClassHandler)
 	// router.HandlerFunc(http.MethodPut, "/classes/:id/put", a.putClassHandler)
 	// router.HandlerFunc(http.MethodPatch, "/classes/:id/patch", a.patchClassHandler)
