@@ -14,7 +14,7 @@ func (a *applicationDependencies) routes() http.Handler {
 	router.MethodNotAllowed = http.HandlerFunc(a.methodNotAllowedResponse)
 
 	// setup routes
-	router.HandlerFunc(http.MethodGet, "/classes", a.viewClassHandler)
+	router.HandlerFunc(http.MethodGet, "/classes", a.listClassesHandler)
 	router.HandlerFunc(http.MethodGet, "/classes/:id", a.displayClassHandler)
 	router.HandlerFunc(http.MethodPost, "/classes/add", a.postClassHandler)
 	// router.HandlerFunc(http.MethodPut, "/classes/:id/put", a.updateClassHandler)

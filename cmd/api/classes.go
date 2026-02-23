@@ -228,6 +228,21 @@ func (a *applicationDependencies)deleteClassHandler(w http.ResponseWriter, r *ht
 
 }
 
+func (a *applicationDependencies)listClassesHandler(w http.ResponseWriter, r *http.Request) {
+	classes, err := a.classModel.GetAll()
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+
+	data := envelope {
+		"classes": classes,
+	}
+	err = a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+	}
+}
 
 
 

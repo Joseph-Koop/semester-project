@@ -1,6 +1,7 @@
 GET
 valid:
 curl -i localhost:4000/classes
+curl -i localhost:4000/classes/1
 
 errors:
 curl -i localhost:4000/random

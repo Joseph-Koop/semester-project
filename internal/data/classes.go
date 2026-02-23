@@ -156,5 +156,50 @@ func (c ClassModel) Delete(id int64) error {
 
 }
 
+// Get all classes
+func (c ClassModel) GetAll() ([]*Class, error) {
 
+// the SQL query to be executed against the database table
+    query := `
+        SELECT *
+        FROM classes
+        ORDER BY id
+      `
+    ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+    defer cancel()
+
+    // QueryContext returns multiple rows.
+    rows, err := c.DB.QueryContext(ctx, query)
+    if err != nil {
+        return nil, err
+    }
+
+    // clean up the memory that was used
+    defer rows.Close()
+    // we will store the address of each comment in our slice
+    classes := []*Class{}
+
+    // process each row that is in rows
+
+    for rows.Next() {
+        var class Class
+        err := rows.Scan(&class.ID, &class.Studio_id, &class.Trainer_id, &class.Capacity_limit, &class.Membership_tier, &class.Name, &class.Terminated, &class.CreatedAt, &class.Version,)
+
+        if err != nil {
+            return nil, err
+        }
+
+        // add the row to our slice
+        classes = append(classes, &class)
+    }  // end of for loop
+
+    // after we exit the loop we need to check if it generated any errors
+    err = rows.Err()
+    if err != nil {
+        return nil, err
+    }
+
+    return classes, nil
+
+}
 
