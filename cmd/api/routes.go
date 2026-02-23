@@ -19,7 +19,7 @@ func (a *applicationDependencies) routes() http.Handler {
 	router.HandlerFunc(http.MethodPost, "/classes/add", a.postClassHandler)
 	// router.HandlerFunc(http.MethodPut, "/classes/:id/put", a.updateClassHandler)
 	router.HandlerFunc(http.MethodPatch, "/classes/:id/update", a.updateClassHandler)
-	// router.HandlerFunc(http.MethodDelete, "/classes/:id/delete", a.deletelassHandler)
+	router.HandlerFunc(http.MethodDelete, "/classes/:id/delete", a.deleteClassHandler)
 
 	return a.recoverPanic(router)
 

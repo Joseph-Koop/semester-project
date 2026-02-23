@@ -22,3 +22,11 @@ curl -X PATCH -d '{"studio_id":3, "trainer_id":3, "capacity_limit":25, "membersh
 
 errors:
 curl -X PATCH -d '{"studio_id":3, "trainer_id":3, "capacity_limit":20, "membership_tier":"", "name":"Gymnastics", "terminated":true}' localhost:4000/classes/2/update
+
+
+DELETE:
+valid:
+curl -X DELETE localhost:4000/classes/3/delete
+
+errors:
+curl -X DELETE localhost:4000/classes/50/delete
