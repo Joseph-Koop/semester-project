@@ -99,3 +99,22 @@ func (c ClassModel) Get(id int64) (*Class, error) {
 		}
 	return &class, nil
 }
+
+// Update a specific Comment from the comments table
+func (c ClassModel) Update(class *Class) error {
+// The SQL query to be executed against the database table
+// Every time we make an update, we increment the version number
+    query := `
+        UPDATE classes
+        SET studio_id = $1, trainer_id = $2, capacity_limit = $3, membership_tier = $4, name = $5, terminated = $6, version = version + 1
+        WHERE id = $7
+        RETURNING version
+      `
+    args := []any{class.Studio_id, class.Trainer_id, class.Capacity_limit, class.Membership_tier, class.Name, class.Terminated, class.ID}
+    ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+    defer cancel()
+
+    return c.DB.QueryRowContext(ctx, query, args...).Scan(&class.Version)
+                                              
+}
+

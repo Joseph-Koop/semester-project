@@ -1,29 +1,24 @@
-WRITE JSON
-
+GET
 valid:
 curl -i localhost:4000/classes
-
 
 errors:
 curl -i localhost:4000/random
 curl -i -X PUT localhost:4000/classes
-panic
 
 
-
-
-READ JSON
-
+POST
 valid:
-
-BODY='{"studio_id":4, "trainer_id":3, "capacity_limit":25, "membership_tier":"standard", "name":"Gymnastics", "terminated":true}'
-curl -i -d "$BODY" localhost:4000/classes/post
-
+curl -i -d '{"studio_id":4, "trainer_id":3, "capacity_limit":25, "membership_tier":"standard", "name":"Gymnastics", "terminated":true}' localhost:4000/classes/add
 
 errors:
+curl -i -d '{"location":4, "trainer":3, "limit":25, "membership":"standard", "name":"Gymnastics", "terminated":false}' localhost:4000/classes/add
+curl -i -d '' localhost:4000/classes/add
 
-BODY='{"location":4, "trainer":3, "limit":25, "membership":"standard", "name":"Gymnastics", "terminated":false}'
-curl -i -d "$BODY" localhost:4000/classes/post
 
-BODY=''
-curl -i -d "$BODY" localhost:4000/classes/post
+PATCH
+valid:
+curl -X PATCH -d '{"studio_id":3, "trainer_id":3, "capacity_limit":25, "membership_tier":"premium", "name":"Gymnastics", "terminated":true}' localhost:4000/classes/2/update
+
+errors:
+curl -X PATCH -d '{"studio_id":3, "trainer_id":3, "capacity_limit":20, "membership_tier":"", "name":"Gymnastics", "terminated":true}' localhost:4000/classes/2/update

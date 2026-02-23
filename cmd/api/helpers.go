@@ -40,9 +40,7 @@ func (a *applicationDependencies) writeJSON(w http.ResponseWriter,
 
 }
 
-func (a *applicationDependencies) readJSON(w http.ResponseWriter,
-	r *http.Request,
-	destination any) error {
+func (a *applicationDependencies) readJSON(w http.ResponseWriter, r *http.Request, destination any) error {
 
 	// what is the max size of the request body (250KB seems reasonable)
 	maxBytes := 256_000
