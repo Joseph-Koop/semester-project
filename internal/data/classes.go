@@ -158,18 +158,9 @@ func (c ClassModel) Delete(id int64) error {
 }
 
 // Get all classes
-func (c ClassModel) GetAll(studio_id *int, trainer_id *int, capacity_limit *int, membership_tier *string, name *string, terminated *bool) ([]*Class, error) {
+func (c ClassModel) GetAll(studio_id *int, trainer_id *int, capacity_limit *int, membership_tier *string, name *string, terminated *bool, filters Filters) ([]*Class, error) {
 
-    if name != nil {
-        log.Printf("Name value: %s\n", *name)  // *name dereferences the pointer
-    } else {
-        log.Printf("Name is nil\n")
-    }
-    if studio_id != nil {
-        log.Printf("Studio value: %d\n", *studio_id)  // *name dereferences the pointer
-    } else {
-        log.Printf("Studio is nil\n")
-    }
+    log.Printf("%d", filters.limit())
 
 // the SQL query to be executed against the database table
     query := `
@@ -183,12 +174,14 @@ func (c ClassModel) GetAll(studio_id *int, trainer_id *int, capacity_limit *int,
                 plainto_tsquery('simple', $5) OR $5 IS NULL) 
             AND (terminated = $6 OR $6 IS NULL)
         ORDER BY id
+        LIMIT $7 OFFSET $8
       `
     ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
     defer cancel()
 
     // QueryContext returns multiple rows.
-    rows, err := c.DB.QueryContext(ctx, query, studio_id, trainer_id, capacity_limit, membership_tier, name, terminated)
+    rows, err := c.DB.QueryContext(ctx, query, studio_id, trainer_id, capacity_limit, membership_tier, name, terminated, filters.limit(), filters.offset())
+
     if err != nil {
         return nil, err
     }
