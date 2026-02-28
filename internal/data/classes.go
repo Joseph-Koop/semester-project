@@ -158,13 +158,13 @@ func (c ClassModel) Delete(id int64) error {
 }
 
 // Get all classes
-func (c ClassModel) GetAll(studio_id *int, trainer_id *int, capacity_limit *int, membership_tier *string, name *string, terminated *bool, filters Filters) ([]*Class, error) {
+func (c ClassModel) GetAll(studio_id *int, trainer_id *int, capacity_limit *int, membership_tier *string, name *string, terminated *bool, filters Filters) ([]*Class, Metadata, error) {
 
     log.Printf("%d", filters.limit())
 
 // the SQL query to be executed against the database table
     query := `
-        SELECT *
+        SELECT  COUNT(*) OVER(), *
         FROM classes
         WHERE (studio_id = $1 OR $1 IS NULL)
             AND (trainer_id = $2 OR $2 IS NULL)
@@ -183,11 +183,12 @@ func (c ClassModel) GetAll(studio_id *int, trainer_id *int, capacity_limit *int,
     rows, err := c.DB.QueryContext(ctx, query, studio_id, trainer_id, capacity_limit, membership_tier, name, terminated, filters.limit(), filters.offset())
 
     if err != nil {
-        return nil, err
+        return nil, Metadata{}, err
     }
 
     // clean up the memory that was used
     defer rows.Close()
+    totalRecords := 0
     // we will store the address of each comment in our slice
     classes := []*Class{}
 
@@ -195,10 +196,10 @@ func (c ClassModel) GetAll(studio_id *int, trainer_id *int, capacity_limit *int,
 
     for rows.Next() {
         var class Class
-        err := rows.Scan(&class.ID, &class.Studio_id, &class.Trainer_id, &class.Capacity_limit, &class.Membership_tier, &class.Name, &class.Terminated, &class.CreatedAt, &class.Version,)
+        err := rows.Scan(&totalRecords, &class.ID, &class.Studio_id, &class.Trainer_id, &class.Capacity_limit, &class.Membership_tier, &class.Name, &class.Terminated, &class.CreatedAt, &class.Version,)
 
         if err != nil {
-            return nil, err
+            return nil, Metadata{}, err
         }
 
         // add the row to our slice
@@ -208,10 +209,13 @@ func (c ClassModel) GetAll(studio_id *int, trainer_id *int, capacity_limit *int,
     // after we exit the loop we need to check if it generated any errors
     err = rows.Err()
     if err != nil {
-        return nil, err
+        return nil, Metadata{}, err
     }
+    // Create the metadata
+    metadata := CalculateMetaData(totalRecords, filters.Page, filters.PageSize)
 
-    return classes, nil
+
+    return classes, metadata, nil
 
 }
 

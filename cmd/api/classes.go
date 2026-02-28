@@ -304,7 +304,7 @@ func (a *applicationDependencies) listClassesHandler(w http.ResponseWriter, r *h
 		return
 	}
 
-	classes, err := a.classModel.GetAll(queryParametersData.Studio_id, queryParametersData.Trainer_id, queryParametersData.Capacity_limit, queryParametersData.Membership_tier, queryParametersData.Name, queryParametersData.Terminated, queryParametersData.Filters)
+	classes, metadata, err := a.classModel.GetAll(queryParametersData.Studio_id, queryParametersData.Trainer_id, queryParametersData.Capacity_limit, queryParametersData.Membership_tier, queryParametersData.Name, queryParametersData.Terminated, queryParametersData.Filters)
 	if err != nil {
 		a.serverErrorResponse(w, r, err)
 		return
@@ -312,6 +312,7 @@ func (a *applicationDependencies) listClassesHandler(w http.ResponseWriter, r *h
 
 	data := envelope{
 		"classes": classes,
+        "@metadata": metadata,
 	}
 	err = a.writeJSON(w, http.StatusOK, data, nil)
 	if err != nil {
