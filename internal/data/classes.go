@@ -4,6 +4,7 @@ import (
   "context"
   "database/sql"
   "errors"
+  "log"
   "time"
   "github.com/Joseph-Koop/json-project/internal/validator"
 )
@@ -157,19 +158,37 @@ func (c ClassModel) Delete(id int64) error {
 }
 
 // Get all classes
-func (c ClassModel) GetAll() ([]*Class, error) {
+func (c ClassModel) GetAll(studio_id *int, trainer_id *int, capacity_limit *int, membership_tier *string, name *string, terminated *bool) ([]*Class, error) {
+
+    if name != nil {
+        log.Printf("Name value: %s\n", *name)  // *name dereferences the pointer
+    } else {
+        log.Printf("Name is nil\n")
+    }
+    if studio_id != nil {
+        log.Printf("Studio value: %d\n", *studio_id)  // *name dereferences the pointer
+    } else {
+        log.Printf("Studio is nil\n")
+    }
 
 // the SQL query to be executed against the database table
     query := `
         SELECT *
         FROM classes
+        WHERE (studio_id = $1 OR $1 IS NULL)
+            AND (trainer_id = $2 OR $2 IS NULL)
+            AND (capacity_limit = $3 OR $3 IS NULL)
+            AND (membership_tier = $4 OR $4 IS NULL)
+            AND (to_tsvector('simple', name) @@ 
+                plainto_tsquery('simple', $5) OR $5 IS NULL) 
+            AND (terminated = $6 OR $6 IS NULL)
         ORDER BY id
       `
     ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
     defer cancel()
 
     // QueryContext returns multiple rows.
-    rows, err := c.DB.QueryContext(ctx, query)
+    rows, err := c.DB.QueryContext(ctx, query, studio_id, trainer_id, capacity_limit, membership_tier, name, terminated)
     if err != nil {
         return nil, err
     }

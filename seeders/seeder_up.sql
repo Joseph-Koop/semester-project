@@ -18,7 +18,23 @@ INSERT INTO classes (studio_id, trainer_id, capacity_limit, membership_tier, nam
 (2, 2, 20, 'basic', 'Morning Yoga', FALSE),
 (4, 4, 15, 'standard', 'Spin Blast', FALSE),
 (2, 1, 25, 'premium', 'Advanced Pilates', FALSE),
-(4, 3, 30, 'standard', 'HIIT Power', FALSE);
+(4, 3, 30, 'standard', 'HIIT Power', FALSE),
+(1, 1, 12, 'basic', 'Sunrise Stretch', FALSE),
+(3, 2, 40, 'premium', 'Strength Lab', FALSE),
+(2, 4, 18, 'standard', 'Core Crusher', FALSE),
+(1, 3, 50, 'premium', 'Elite Bootcamp', FALSE),
+(3, 1, 22, 'basic', 'Beginner Boxing', FALSE),
+(4, 2, 35, 'standard', 'Cardio Burn', FALSE),
+(2, 3, 60, 'premium', 'Powerlifting Intro', FALSE),
+(1, 4, 28, 'basic', 'Mobility Flow', TRUE),
+(3, 4, 75, 'premium', 'Athlete Conditioning', FALSE),
+(4, 1, 45, 'standard', 'Total Body Blast', FALSE),
+(1, 2, 16, 'basic', 'Evening Relax Yoga', TRUE),
+(2, 2, 90, 'premium', 'Max Strength', FALSE),
+(3, 3, 55, 'standard', 'Functional Fitness', FALSE),
+(4, 4, 70, 'premium', 'Performance Lab', TRUE),
+(1, 3, 10, 'basic', 'Gentle Stretch', FALSE),
+(2, 1, 33, 'standard', 'Circuit Express', FALSE);
 
 INSERT INTO sessions (class_id, day, time) VALUES
 (1, 'mon', '08:00'),

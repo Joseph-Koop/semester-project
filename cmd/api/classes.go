@@ -4,7 +4,9 @@ import (
 	//   "encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
+	"strconv"
 	// import the data package which contains the definition for Class
 	"github.com/Joseph-Koop/json-project/internal/data"
 	"github.com/Joseph-Koop/json-project/internal/validator"
@@ -229,7 +231,69 @@ func (a *applicationDependencies)deleteClassHandler(w http.ResponseWriter, r *ht
 }
 
 func (a *applicationDependencies)listClassesHandler(w http.ResponseWriter, r *http.Request) {
-	classes, err := a.classModel.GetAll()
+
+	// Create a struct to hold the query parameters
+	// Later on we will add fields for pagination and sorting (filters)
+	// Joseph: changed to pointers so I can filter by null values in sql function
+    var queryParametersData struct {
+        Studio_id *int
+        Trainer_id  *int
+        Capacity_limit *int
+        Membership_tier *string
+        Name *string
+        Terminated *bool
+    }
+	// get the query parameters from the URL
+   	queryParameters := r.URL.Query()
+	
+	// Load the query parameters into our struct
+	// Joseph: handle conversions
+	studio_string := a.getSingleQueryParameter(queryParameters, "studio_id", "")
+
+    log.Printf("Studio string: %+v\n", studio_string)
+	
+	if(studio_string != ""){
+		studio_int, err := strconv.Atoi(studio_string)
+		log.Printf("Studio int: %+v\n", studio_int)
+
+		if(err == nil && studio_int != 0){
+			queryParametersData.Studio_id = &studio_int
+		}
+	}
+	trainer_string := a.getSingleQueryParameter(queryParameters, "trainer_id", "")
+	if(trainer_string != ""){
+		trainer_int, err := strconv.Atoi(trainer_string)
+		if(err == nil && trainer_int != 0){
+			queryParametersData.Trainer_id = &trainer_int
+		}
+	}  
+	capacity_string := a.getSingleQueryParameter(queryParameters, "capacity_limit", "")
+	if(capacity_string != ""){
+		capacity_int, err := strconv.Atoi(capacity_string)
+		if(err == nil && capacity_int != 0){
+			queryParametersData.Capacity_limit = &capacity_int
+		}
+	}  
+	membership_string := a.getSingleQueryParameter(queryParameters, "membership_tier", "")
+	if(membership_string != "" && (membership_string == "basic" || membership_string == "standard" || membership_string == "premium" )){
+		queryParametersData.Membership_tier = &membership_string
+	}  
+	name_string := a.getSingleQueryParameter(queryParameters, "name", "")
+
+	log.Printf("Name string: %+v\n", name_string)
+
+	if(name_string != ""){
+		queryParametersData.Name = &name_string
+	}     
+	terminated_string := a.getSingleQueryParameter(queryParameters, "terminated", "")
+	if(terminated_string != ""){
+		terminated_bool, err := strconv.ParseBool(terminated_string)
+		if(err == nil){
+			queryParametersData.Terminated = &terminated_bool
+		}
+	}   
+
+	classes, err := a.classModel.GetAll(queryParametersData.Studio_id, queryParametersData.Trainer_id, queryParametersData.Capacity_limit, queryParametersData.Membership_tier, queryParametersData.Name, queryParametersData.Terminated )
 	if err != nil {
 		a.serverErrorResponse(w, r, err)
 		return

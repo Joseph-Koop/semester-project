@@ -2,6 +2,8 @@ GET
 valid:
 curl -i localhost:4000/classes
 curl -i localhost:4000/classes/1
+curl -i localhost:4000/classes?name=strength
+curl -i localhost:4000/classes?membership_tier=premium
 
 errors:
 curl -i localhost:4000/random
@@ -10,7 +12,7 @@ curl -i -X PUT localhost:4000/classes
 
 POST
 valid:
-curl -i -d '{"studio_id":4, "trainer_id":3, "capacity_limit":25, "membership_tier":"standard", "name":"Gymnastics", "terminated":true}' localhost:4000/classes/add
+curl -i -d '{"studio_id":4, "trainer_id":3, "capacity_limit":25, "membership_tier":"standard", "name":"Gymnastics", "terminated":false}' localhost:4000/classes/add
 
 errors:
 curl -i -d '{"location":4, "trainer":3, "limit":25, "membership":"standard", "name":"Gymnastics", "terminated":false}' localhost:4000/classes/add
