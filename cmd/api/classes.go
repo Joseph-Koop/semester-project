@@ -247,6 +247,12 @@ func (a *applicationDependencies) listClassesHandler(w http.ResponseWriter, r *h
 	// get the query parameters from the URL
 	queryParameters := r.URL.Query()
 
+	// fmt.Printf("Query parameters: %v\n", queryParameters)
+	fmt.Printf("Query request: %v\n", r)
+
+	// Create a new validator instance
+	v := validator.New()
+
 	// Load the query parameters into our struct
 	// Joseph: handle conversions
 	studio_string := a.getSingleQueryParameter(queryParameters, "studio_id", "")
@@ -257,6 +263,8 @@ func (a *applicationDependencies) listClassesHandler(w http.ResponseWriter, r *h
 
 		if err == nil && studio_int != 0 {
 			queryParametersData.Studio_id = &studio_int
+		} else {
+			v.AddError(studio_string, "Must be an integer value.")
 		}
 	}
 	trainer_string := a.getSingleQueryParameter(queryParameters, "trainer_id", "")
@@ -264,6 +272,8 @@ func (a *applicationDependencies) listClassesHandler(w http.ResponseWriter, r *h
 		trainer_int, err := strconv.Atoi(trainer_string)
 		if err == nil && trainer_int != 0 {
 			queryParametersData.Trainer_id = &trainer_int
+		} else {
+			v.AddError(trainer_string, "Must be an integer value.")
 		}
 	}
 	capacity_string := a.getSingleQueryParameter(queryParameters, "capacity_limit", "")
@@ -271,6 +281,8 @@ func (a *applicationDependencies) listClassesHandler(w http.ResponseWriter, r *h
 		capacity_int, err := strconv.Atoi(capacity_string)
 		if err == nil && capacity_int != 0 {
 			queryParametersData.Capacity_limit = &capacity_int
+		} else {
+			v.AddError(capacity_string, "Must be an integer value.")
 		}
 	}
 	membership_string := a.getSingleQueryParameter(queryParameters, "membership_tier", "")
@@ -287,15 +299,16 @@ func (a *applicationDependencies) listClassesHandler(w http.ResponseWriter, r *h
 		terminated_bool, err := strconv.ParseBool(terminated_string)
 		if err == nil {
 			queryParametersData.Terminated = &terminated_bool
+		} else {
+			v.AddError(terminated_string, "Must be an boolean value.")
 		}
 	}
 
-	// Create a new validator instance
-	v := validator.New()
-	queryParametersData.Filters.Page = a.getSingleIntegerParameter(
-		queryParameters, "page", 1, v)
-	queryParametersData.Filters.PageSize = a.getSingleIntegerParameter(
-		queryParameters, "page_size", 10, v)
+	queryParametersData.Filters.Page = a.getSingleIntegerParameter(queryParameters, "page", 1, v)
+	queryParametersData.Filters.PageSize = a.getSingleIntegerParameter(queryParameters, "page_size", 10, v)
+
+	queryParametersData.Filters.Sort = a.getSingleQueryParameter(queryParameters, "sort", "id")
+	queryParametersData.Filters.SortSafeList = []string{"id", "capacity_limit", "name", "-id", "-capacity_limit", "-name"}
 
 	// Check if our filters are valid
 	data.ValidateFilters(v, queryParametersData.Filters)
@@ -311,8 +324,8 @@ func (a *applicationDependencies) listClassesHandler(w http.ResponseWriter, r *h
 	}
 
 	data := envelope{
-		"classes": classes,
-        "@metadata": metadata,
+		"classes":   classes,
+		"@metadata": metadata,
 	}
 	err = a.writeJSON(w, http.StatusOK, data, nil)
 	if err != nil {

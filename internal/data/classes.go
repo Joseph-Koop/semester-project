@@ -4,6 +4,7 @@ import (
   "context"
   "database/sql"
   "errors"
+  "fmt"
   "log"
   "time"
   "github.com/Joseph-Koop/json-project/internal/validator"
@@ -163,7 +164,7 @@ func (c ClassModel) GetAll(studio_id *int, trainer_id *int, capacity_limit *int,
     log.Printf("%d", filters.limit())
 
 // the SQL query to be executed against the database table
-    query := `
+    query := fmt.Sprintf(`
         SELECT  COUNT(*) OVER(), *
         FROM classes
         WHERE (studio_id = $1 OR $1 IS NULL)
@@ -173,9 +174,9 @@ func (c ClassModel) GetAll(studio_id *int, trainer_id *int, capacity_limit *int,
             AND (to_tsvector('simple', name) @@ 
                 plainto_tsquery('simple', $5) OR $5 IS NULL) 
             AND (terminated = $6 OR $6 IS NULL)
-        ORDER BY id
-        LIMIT $7 OFFSET $8
-      `
+        ORDER BY %s %s, id ASC
+        LIMIT $7 OFFSET $8`, filters.sortColumn(), filters.sortDirection())
+
     ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
     defer cancel()
 

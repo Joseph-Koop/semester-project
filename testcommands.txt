@@ -4,7 +4,10 @@ curl -i localhost:4000/classes
 curl -i localhost:4000/classes/1
 curl -i localhost:4000/classes?name=strength
 curl -i localhost:4000/classes?membership_tier=premium
-curl -i localhost:4000/classes?page=1&page_size=2
+curl -i localhost:4000/classes?page=1\&page_size=2
+curl -i localhost:4000/classes?membership_tier=premium\&studio_id=3
+curl -i "http://localhost:4000/classes?membership_tier=premium&studio_id=3"
+curl -i localhost:4000/classes?sort=-capacity_limit
 
 errors:
 curl -i localhost:4000/random
