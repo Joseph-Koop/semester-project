@@ -61,6 +61,13 @@ func (a *applicationDependencies)failedValidationResponse(w http.ResponseWriter,
      a.errorResponseJSON(w, r, http.StatusUnprocessableEntity, errors)
 }
 
+// send an error response if rate limit exceeded (429 - Too Many Requests)
+func (a *applicationDependencies)rateLimitExceededResponse(w http.ResponseWriter, r *http.Request)  {
+
+    message := "Rate limit exceeded."
+    a.errorResponseJSON(w, r, http.StatusTooManyRequests, message)
+}
+
 
 // func (a *applicationDependencies) viewClassHandler(w http.ResponseWriter, r *http.Request) {
 // 	// panic("Panic!!!!")   // deliberate panic

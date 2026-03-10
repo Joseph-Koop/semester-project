@@ -247,9 +247,6 @@ func (a *applicationDependencies) listClassesHandler(w http.ResponseWriter, r *h
 	// get the query parameters from the URL
 	queryParameters := r.URL.Query()
 
-	// fmt.Printf("Query parameters: %v\n", queryParameters)
-	fmt.Printf("Query request: %v\n", r)
-
 	// Create a new validator instance
 	v := validator.New()
 

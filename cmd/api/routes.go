@@ -22,6 +22,6 @@ func (a *applicationDependencies) routes() http.Handler {
 	
 	// router.HandlerFunc(http.MethodPut, "/classes/:id/put", a.updateClassHandler)
 
-	return a.recoverPanic(router)
+	return a.recoverPanic(a.rateLimit(router))
 
 }

@@ -2,7 +2,12 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"net/http"
+	"sync"
+	"time"
+
+	"golang.org/x/time/rate"
 )
 
 func (a *applicationDependencies) recoverPanic(next http.Handler) http.Handler {
@@ -16,6 +21,63 @@ func (a *applicationDependencies) recoverPanic(next http.Handler) http.Handler {
 				a.serverErrorResponse(w, r, fmt.Errorf("%s", err))
 			}
 		}()
+		next.ServeHTTP(w, r)
+	})
+}
+
+// Delete all previous code in rateLimit. We will start from scratch
+func (a *applicationDependencies) rateLimit(next http.Handler) http.Handler {
+	// Define a rate limiter struct
+	type client struct {
+		limiter  *rate.Limiter
+		lastSeen time.Time // remove map entries that are stale
+	}
+	var mu sync.Mutex                      // use to synchronize the map
+	var clients = make(map[string]*client) // the actual map
+	// A goroutine to remove stale entries from the map
+	go func() {
+		for {
+			time.Sleep(time.Minute)
+			mu.Lock() // begin cleanup
+			// delete any entry not seen in three minutes
+			for ip, client := range clients {
+				if time.Since(client.lastSeen) > 3*time.Minute {
+					delete(clients, ip)
+				}
+			}
+			mu.Unlock() // finish clean up
+		}
+	}()
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// we will wrap all our logic in an if statement
+    	if a.config.limiter.enabled {
+			// get the IP address
+			ip, _, err := net.SplitHostPort(r.RemoteAddr)
+			if err != nil {
+				a.serverErrorResponse(w, r, err)
+				return
+			}
+
+			mu.Lock() // exclusive access to the map
+			// check if ip address already in map, if not add it
+			_, found := clients[ip]
+			if !found {
+				clients[ip] = &client{limiter: rate.NewLimiter(2, 5)}
+			}
+
+			// Update the last seen for the client
+			clients[ip].lastSeen = time.Now()
+
+			// Check the rate limit status
+			if !clients[ip].limiter.Allow() {
+				mu.Unlock() // no longer need exclusive access to the map
+				a.rateLimitExceededResponse(w, r)
+				return
+			}
+
+			mu.Unlock() // others are free to get exclusive access to the map
+		}
 		next.ServeHTTP(w, r)
 	})
 }
