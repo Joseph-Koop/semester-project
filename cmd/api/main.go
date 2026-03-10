@@ -2,9 +2,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
 	"time"
 	"context"
@@ -73,19 +71,12 @@ func main() {
         classModel: data.ClassModel {DB: db},
     }
 
-	apiServer := &http.Server {
-        Addr: fmt.Sprintf(":%d", settings.port),
-        Handler: appInstance.routes(),
-        IdleTimeout: time.Minute,
-        ReadTimeout: 5 * time.Second,
-        WriteTimeout: 10 * time.Second,
-        ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
+	err = appInstance.serve()
+    if err != nil {
+        logger.Error(err.Error())
+        os.Exit(1)
     }
 
-	logger.Info("Starting server.", "address", apiServer.Addr, "environment", settings.environment)
-    err = apiServer.ListenAndServe()   // remove the :
-    logger.Error(err.Error())
-    os.Exit(1)
 
 
 }  // end of main()

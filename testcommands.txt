@@ -2,6 +2,9 @@ go run ./cmd/api -port=4000 -env=development -limiter-burst=5 -limiter-rps=2 -li
            
            -db-dsn=${COMMENTS_DB_DSN}
 
+RATE LIMITING
+for i in {1..8}; do curl localhost:4000/classes/1; done
+
 
 GET
 valid:
@@ -17,9 +20,6 @@ curl -i localhost:4000/classes?sort=-capacity_limit
 errors:
 curl -i localhost:4000/random
 curl -i -X PUT localhost:4000/classes
-
-RATE LIMITING
-for i in {1..8}; do curl localhost:4000/classes/1; done
 
 POST
 valid:

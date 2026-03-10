@@ -51,7 +51,7 @@ func (a *applicationDependencies) rateLimit(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// we will wrap all our logic in an if statement
-    	if a.config.limiter.enabled {
+		if a.config.limiter.enabled {
 			// get the IP address
 			ip, _, err := net.SplitHostPort(r.RemoteAddr)
 			if err != nil {
@@ -63,7 +63,7 @@ func (a *applicationDependencies) rateLimit(next http.Handler) http.Handler {
 			// check if ip address already in map, if not add it
 			_, found := clients[ip]
 			if !found {
-				clients[ip] = &client{limiter: rate.NewLimiter(2, 5)}
+				clients[ip] = &client{limiter: rate.NewLimiter(rate.Limit(a.config.limiter.rps), a.config.limiter.burst)}
 			}
 
 			// Update the last seen for the client
