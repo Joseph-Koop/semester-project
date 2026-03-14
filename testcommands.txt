@@ -3,7 +3,7 @@ go run ./cmd/api -port=4000 -env=development -limiter-burst=5 -limiter-rps=2 -li
            -db-dsn=${COMMENTS_DB_DSN}
 
 RATE LIMITING
-for i in {1..8}; do curl localhost:4000/classes/1; done
+for i in {1..10}; do curl localhost:4000/classes/1; done
 
 
 GET
