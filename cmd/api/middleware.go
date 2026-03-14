@@ -10,6 +10,21 @@ import (
 	"golang.org/x/time/rate"
 )
 
+
+func (a *applicationDependencies) logRequest(next http.Handler) http.Handler{
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		a.logger.Info("request",
+			"method", r.Method,
+			"url", r.URL.String(),
+			"remote_ip", r.RemoteAddr,
+			"user_agent", r.UserAgent(),
+			"time", time.Now().UTC(),
+		)
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (a *applicationDependencies) recoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// defer will be called when the stack unwinds
@@ -19,6 +34,7 @@ func (a *applicationDependencies) recoverPanic(next http.Handler) http.Handler {
 			if err != nil {
 				w.Header().Set("Connection", "close")
 				a.serverErrorResponse(w, r, fmt.Errorf("%s", err))
+				return
 			}
 		}()
 		next.ServeHTTP(w, r)
