@@ -13,10 +13,10 @@ func (a *applicationDependencies) logError(r *http.Request, err error) {
 
 }
 
-func (a *applicationDependencies) errorResponseJSON(w http.ResponseWriter, r *http.Request, status int, message any) {
+func (a *applicationDependencies) errorResponseJSON(w http.ResponseWriter, r *http.Request, status int, message any, headers http.Header) {
 
 	errorData := envelope{"error": message}
-	err := a.writeJSON(w, status, errorData, nil)
+	err := a.writeJSON(w, status, errorData, headers)
 	if err != nil {
 		a.logError(r, err)
 		w.WriteHeader(500)
@@ -29,7 +29,7 @@ func (a *applicationDependencies) serverErrorResponse(w http.ResponseWriter, r *
 	a.logError(r, err)
 	// prepare a response to send to the client
 	message := "The server encountered a problem and could not process your request."
-	a.errorResponseJSON(w, r, http.StatusInternalServerError, message)
+	a.errorResponseJSON(w, r, http.StatusInternalServerError, message, nil)
 }
 
 // send an error response if our client messes up with a 404
@@ -38,7 +38,7 @@ func (a *applicationDependencies) notFoundResponse(w http.ResponseWriter, r *htt
 	// we only log server errors, not client errors
 	// prepare a response to send to the client
 	message := "The requested resource could not be found."
-	a.errorResponseJSON(w, r, http.StatusNotFound, message)
+	a.errorResponseJSON(w, r, http.StatusNotFound, message, nil)
 }
 
 // send an error response if our client messes up with a 405
@@ -48,62 +48,23 @@ func (a *applicationDependencies) methodNotAllowedResponse(w http.ResponseWriter
 	// prepare a formatted response to send to the client
 	message := fmt.Sprintf("The %s method is not supported for this resource.", r.Method)
 
-	a.errorResponseJSON(w, r, http.StatusMethodNotAllowed, message)
+	a.errorResponseJSON(w, r, http.StatusMethodNotAllowed, message, nil)
 }
 
 // send an error response if our client messes up with a 400 (bad request)
 func (a *applicationDependencies) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
 
-	a.errorResponseJSON(w, r, http.StatusBadRequest, err.Error())
+	a.errorResponseJSON(w, r, http.StatusBadRequest, err.Error(), nil)
 }
 
 func (a *applicationDependencies)failedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
-     a.errorResponseJSON(w, r, http.StatusUnprocessableEntity, errors)
+     a.errorResponseJSON(w, r, http.StatusUnprocessableEntity, errors, nil)
 }
 
 // send an error response if rate limit exceeded (429 - Too Many Requests)
 func (a *applicationDependencies)rateLimitExceededResponse(w http.ResponseWriter, r *http.Request)  {
-
+    headers := make(http.Header)
+    headers.Set("Retry-After", "5") 
     message := "Rate limit exceeded."
-    a.errorResponseJSON(w, r, http.StatusTooManyRequests, message)
+    a.errorResponseJSON(w, r, http.StatusTooManyRequests, message, headers)
 }
-
-
-// func (a *applicationDependencies) viewClassHandler(w http.ResponseWriter, r *http.Request) {
-// 	// panic("Panic!!!!")   // deliberate panic
-// 	data := envelope{
-// 		"classes": []map[string]any{
-// 			{
-// 				"id":              1,
-// 				"studio":          "Pool",
-// 				"trainer":         "Mo Lester",
-// 				"capacity_limit":  10,
-// 				"membership_tier": "premium",
-// 				"name":            "Swimming Classes",
-// 				"status":          "Ongoing",
-// 			},
-// 			{
-// 				"id":              2,
-// 				"studio":          "Studio #3",
-// 				"trainer":         "Ben Dover",
-// 				"capacity_limit":  20,
-// 				"membership_tier": "basic",
-// 				"name":            "Powerlifting Classes",
-// 				"status":          "Ongoing",
-// 			},
-// 			{
-// 				"id":              3,
-// 				"studio":          "Studio #6",
-// 				"trainer":         "Anita Bath",
-// 				"capacity_limit":  20,
-// 				"membership_tier": "basic",
-// 				"name":            "Yoga Classes",
-// 				"status":          "Paused",
-// 			},
-// 		},
-// 	}
-// 	err := a.writeJSON(w, http.StatusOK, data, nil)
-// 	if err != nil {
-// 		a.serverErrorResponse(w, r, err)
-// 	}
-// }

@@ -4,12 +4,12 @@ include .envrc
 .PHONY: run/api
 run/api:
 	@echo  'Running application…'
-	@go run ./cmd/api -port=4000 -env=development -db-dsn=${CLASSES_DB_DSN}
+	@go run ./cmd/api -port=${PORT} -env=${ENVIRONMENT} -db-dsn=${DB_DSN}
 
 ## db/psql: connect to the database using psql (terminal)
 .PHONY: db/psql
 db/psql:
-	psql ${CLASSES_DB_DSN}
+	psql ${DB_DSN}
 
 ## db/migrations/new name=$1: create a new database migration
 .PHONY: db/migrations/new
@@ -22,5 +22,5 @@ db/migrations/new:
 .PHONY: db/migrations/up
 db/migrations/up:
 	@echo 'Running up migrations...'
-	migrate -path ./migrations -database ${CLASSES_DB_DSN} up
+	migrate -path ./migrations -database ${DB_DSN} up
 

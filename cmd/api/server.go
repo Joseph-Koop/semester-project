@@ -22,7 +22,7 @@ func (a *applicationDependencies) serve() error {
 		ErrorLog:     slog.NewLogLogger(a.logger.Handler(), slog.LevelError),
 	}
 
-	a.logger.Info("Starting server.", "address", apiServer.Addr, "environment.", a.config.environment)
+	a.logger.Info("Starting server.", "address", apiServer.Addr, "environment", a.config.environment)
 
 	// create a channel to keep track of any errors during the shutdown process
 	shutdownError := make(chan error)

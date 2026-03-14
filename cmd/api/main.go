@@ -1,8 +1,8 @@
 package main
 
 import (
-	"flag"
 	"log/slog"
+    "strconv"
 	"os"
 	"time"
 	"context"
@@ -38,17 +38,13 @@ type applicationDependencies struct {
 func main() {
     var settings serverConfig
 
-    flag.IntVar(&settings.port, "port", 4000, "Server port")
-    flag.StringVar(&settings.environment, "env", "development", "Environment(development|staging|production)")
-    // read in the dsn
-    flag.StringVar(&settings.db.dsn, "db-dsn", "postgres://gym:gym@localhost/gym?sslmode=disable", "PostgreSQL DSN")
+    settings.environment = os.Getenv("ENVIRONMENT")
+    settings.port, _ = strconv.Atoi(os.Getenv("PORT"))
+    settings.db.dsn = os.Getenv("DB_DSN")
 
-    flag.Float64Var(&settings.limiter.rps, "limiter-rps", 2, "Rate Limiter maximum requests per second")
-    flag.IntVar(&settings.limiter.burst, "limiter-burst", 5, "Rate Limiter maximum burst")
-    flag.BoolVar(&settings.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
-
-
-    flag.Parse()
+    settings.limiter.rps, _ = strconv.ParseFloat(os.Getenv("LIMITER_RPS"), 64)
+    settings.limiter.burst, _ = strconv.Atoi(os.Getenv("LIMITER_BURST"))
+    settings.limiter.enabled, _ = strconv.ParseBool(os.Getenv("LIMITER_ENABLED"))
 
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
