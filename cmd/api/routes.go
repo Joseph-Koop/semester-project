@@ -22,6 +22,6 @@ func (a *applicationDependencies) routes() http.Handler {
 	
 	// router.HandlerFunc(http.MethodPut, "/classes/:id/put", a.updateClassHandler)
 
-	return a.logRequest(a.recoverPanic(a.rateLimit(router)))
+	return a.logRequest(a.recoverPanic(a.enableCORS(a.rateLimit(router))))
 
 }

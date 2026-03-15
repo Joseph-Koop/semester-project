@@ -1,9 +1,11 @@
 package main
 
 import (
+    "flag"
 	"log/slog"
     "strconv"
 	"os"
+    "strings"
 	"time"
 	"context"
 	"database/sql"
@@ -25,7 +27,12 @@ type serverConfig struct {
         burst int                        // initial requests possible
         enabled bool                     // enable or disable rate limiter
     }
+    smtp struct {
 
+    }
+    cors struct {
+        trustedOrigins []string
+    }
 }
 
 type applicationDependencies struct {
@@ -45,6 +52,14 @@ func main() {
     settings.limiter.rps, _ = strconv.ParseFloat(os.Getenv("LIMITER_RPS"), 64)
     settings.limiter.burst, _ = strconv.Atoi(os.Getenv("LIMITER_BURST"))
     settings.limiter.enabled, _ = strconv.ParseBool(os.Getenv("LIMITER_ENABLED"))
+
+
+    flag.Func("cors-trusted-origins", "Trusted CORS origins (space separated)",
+        func(val string) error {
+            settings.cors.trustedOrigins = strings.Fields(val)
+            return nil
+        })
+    flag.Parse()
 
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
