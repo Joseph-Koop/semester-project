@@ -54,6 +54,15 @@ func main() {
     settings.limiter.enabled, _ = strconv.ParseBool(os.Getenv("LIMITER_ENABLED"))
 
 
+    flag.IntVar(&settings.port, "port", 4000, "Server port")
+    flag.StringVar(&settings.environment, "env", "development", "Environment(development|staging|production)")
+    // read in the dsn
+    flag.StringVar(&settings.db.dsn, "db-dsn", "postgres://gym:gym@localhost/gym?sslmode=disable", "PostgreSQL DSN")
+
+    // flag.Float64Var(&settings.limiter.rps, "limiter-rps", 2, "Rate Limiter maximum requests per second")
+    // flag.IntVar(&settings.limiter.burst, "limiter-burst", 5, "Rate Limiter maximum burst")
+    // flag.BoolVar(&settings.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
+
     flag.Func("cors-trusted-origins", "Trusted CORS origins (space separated)",
         func(val string) error {
             settings.cors.trustedOrigins = strings.Fields(val)
