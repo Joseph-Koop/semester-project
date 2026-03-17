@@ -1,11 +1,14 @@
 package main
 
 import (
+	"compress/gzip"
 	"expvar"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -77,7 +80,7 @@ func (a *applicationDependencies) metrics (next http.Handler) http.Handler {
 		totalProcessingTimeMicroseconds = expvar.NewInt("total_processing_time_μs")
 		totalResponsesSentByStatus = expvar.NewMap("total_responses_sent_by_status")
 	)
- 
+
  	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         // start is when we receive the request and start processing it
         start := time.Now()
@@ -119,6 +122,32 @@ func (a *applicationDependencies) logRequest(next http.Handler) http.Handler{
 	})
 }
 
+func (a *applicationDependencies) compressResponse(next http.Handler) http.Handler{
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		w.Header().Set("Content-Encoding", "gzip")
+
+		gzw := gzip.NewWriter(w)
+		defer gzw.Close()
+		gzrw := gzipResponseWriter{Writer: gzw, ResponseWriter: w}
+
+		next.ServeHTTP(gzrw, r)
+	})
+}
+
+type gzipResponseWriter struct{
+	http.ResponseWriter
+	io.Writer
+}
+
+func (gzrw gzipResponseWriter) Write(data []byte) (int, error) {
+	return gzrw.Writer.Write(data)
+}
+
 func (a *applicationDependencies) enableCORS (next http.Handler) http.Handler {                             
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -154,9 +183,6 @@ func (a *applicationDependencies) enableCORS (next http.Handler) http.Handler {
         next.ServeHTTP(w, r)
     })
 }
-
-
-
 
 func (a *applicationDependencies) recoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
