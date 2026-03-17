@@ -36,7 +36,7 @@ INSERT INTO classes (studio_id, trainer_id, capacity_limit, membership_tier, nam
 (1, 3, 10, 'basic', 'Gentle Stretch', FALSE),
 (2, 1, 33, 'standard', 'Circuit Express', FALSE);
 
-INSERT INTO sessions (class_id, day, time) VALUES
+INSERT INTO session_times (class_id, day, time) VALUES
 (1, 'mon', '08:00'),
 (1, 'wed', '08:00'),
 (2, 'tue', '18:00'),
@@ -57,6 +57,24 @@ INSERT INTO registrations (member_id, class_id, status) VALUES
 (3, 3, 'active'),
 (4, 4, 'active'),
 (2, 4, 'dropped');
+
+INSERT INTO sessions (class_id) VALUES
+(1),
+(2),
+(3),
+(4),
+(1),
+(2),
+(3),
+(4),
+(1),
+(2),
+(3),
+(4),
+(1),
+(2),
+(3),
+(4);
 
 INSERT INTO attendance (registration_id, session_id) VALUES
 (1, 1),

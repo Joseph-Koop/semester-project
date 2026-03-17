@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS classes (
     version INTEGER NOT NULL DEFAULT 1
 );
 
-CREATE TABLE IF NOT EXISTS sessions (
+CREATE TABLE IF NOT EXISTS session_times (
     id SERIAL PRIMARY KEY,
     class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
     day day_type NOT NULL,
@@ -73,6 +73,11 @@ CREATE TABLE IF NOT EXISTS registrations (
     UNIQUE (member_id, class_id),
     created_at TIME NOT NULL DEFAULT NOW(),
     version INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+    id SERIAL PRIMARY KEY,
+    class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS attendance (
