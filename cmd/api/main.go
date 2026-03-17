@@ -1,10 +1,12 @@
 package main
 
 import (
+    "expvar"
     "flag"
 	"log/slog"
     "strconv"
 	"os"
+    "runtime"
     "strings"
 	"time"
 	"context"
@@ -83,6 +85,24 @@ func main() {
 	defer db.Close()
 
 	logger.Info("Database connection pool established.")
+
+    // We use the NewString() to provide the key and Set() to specify its value
+    expvar.NewString("version").Set(appVersion)
+
+    // the number of active goroutines
+    expvar.Publish("goroutines", expvar.Func(func() any {
+        return runtime.NumGoroutine()
+    }))
+
+    // the database connection pool metrics
+    expvar.Publish("database", expvar.Func(func() any {
+        return db.Stats()
+    }))
+
+    // the current Unix timestamp
+    expvar.Publish("timestamp", expvar.Func(func() any {
+        return time.Now().Unix()
+    }))
 
 
 	appInstance := &applicationDependencies {
