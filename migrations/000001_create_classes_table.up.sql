@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS session_times (
     class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
     day day_type NOT NULL,
     time TIME NOT NULL,
+    duration INTEGER NOT NULL,                  --minutes
     created_at TIME NOT NULL DEFAULT NOW(),
     version INTEGER NOT NULL DEFAULT 1
 );
