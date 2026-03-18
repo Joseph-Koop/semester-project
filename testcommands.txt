@@ -44,3 +44,18 @@ curl -X DELETE localhost:4000/classes/3/delete
 
 errors:
 curl -X DELETE localhost:4000/classes/50/delete
+
+GYMS:
+curl -i localhost:4000/gyms
+curl -i localhost:4000/gyms/2
+curl -i -d '{"location": "San Ignacio", "name": "Athletic Training Facility"}' localhost:4000/gyms/add
+curl -X PATCH -d '{"location": "Spanish Lookout"}' localhost:4000/gyms/2/update
+curl -X DELETE localhost:4000/gyms/3/delete
+
+TRAINERS:
+curl -i localhost:4000/trainers
+curl -i localhost:4000/trainers/2
+curl -i -d '{"name": "Magnus", "address": "1st Street Mountain View Belize", "phone": 5016555555, "email": "mag@gmail.com"}' localhost:4000/trainers/add
+curl -X PATCH -d '{"name": "Magnus", "address": "1st Street Lake View Belize", "phone": 5013333333, "email": "mag@gmail.com"}' localhost:4000/trainers/5/update
+curl -X DELETE localhost:4000/trainers/5/delete
+

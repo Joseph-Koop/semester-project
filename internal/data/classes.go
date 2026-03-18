@@ -5,7 +5,6 @@ import (
   "database/sql"
   "errors"
   "fmt"
-  "log"
   "time"
   "github.com/Joseph-Koop/json-project/internal/validator"
 )
@@ -25,14 +24,14 @@ type Class struct {
 
 // Create a function that performs the validation checks
 func ValidateClass(v *validator.Validator, class *Class) {
-    v.Check(class.Studio_id != 0, "studio_id", "Must be provided.")                                  // check if the Studio field is 0 or less
+    v.Check(class.Studio_id > 0, "studio_id", "Must be an existing studio.")                                  // check if the Studio field is 0 or less
 
-    v.Check(class.Trainer_id != 0, "trainer_id", "Must be provided.")                                // check if the Trainer field is 0 or less
+    v.Check(class.Trainer_id > 0, "trainer_id", "Must be an existing trainer.")                                // check if the Trainer field is 0 or less
 
     v.Check(class.Capacity_limit > 0, "capacity_limit", "Must be greater than 0.")                    // check if the Capacity_limit field 0 or less
     v.Check(class.Capacity_limit <= 100, "capacity_limit", "Must be less than or equal to 100.")      // check if the Capacity_limit field is bigger than 100
 
-    v.Check(class.Membership_tier == "basic" || class.Membership_tier == "standard" || class.Membership_tier == "premium", "membership_tier", "Must be provided.")                // check if the Membership_tier field matches one of the options
+    v.Check(class.Membership_tier == "basic" || class.Membership_tier == "standard" || class.Membership_tier == "premium", "membership_tier", "Must be one of the valid options.")                // check if the Membership_tier field matches one of the options
     
     v.Check(class.Name != "", "name", "Must be provided.")                                      // check if the Name field is empty
     v.Check(len(class.Name) <= 50, "name", "Must not be more than 50 bytes long.")              // check if the Name field is bigger than 50 characters
@@ -144,8 +143,8 @@ func (c ClassModel) Delete(id int64) error {
     }
 
     // Were any rows deleted?
-        rowsAffected, err := result.RowsAffected()
-        if err != nil {
+    rowsAffected, err := result.RowsAffected()
+    if err != nil {
         return err
     }
     // Probably a wrong id was provided or the client is trying to
@@ -160,8 +159,6 @@ func (c ClassModel) Delete(id int64) error {
 
 // Get all classes
 func (c ClassModel) GetAll(studio_id *int, trainer_id *int, capacity_limit *int, membership_tier *string, name *string, terminated *bool, filters Filters) ([]*Class, Metadata, error) {
-
-    log.Printf("%d", filters.limit())
 
 // the SQL query to be executed against the database table
     query := fmt.Sprintf(`

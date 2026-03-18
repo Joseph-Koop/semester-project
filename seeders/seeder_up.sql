@@ -9,10 +9,10 @@ INSERT INTO studios (gym_id, name, access) VALUES
 (2, 'Spin Studio', 'classes');
 
 INSERT INTO trainers (name, address, phone, email) VALUES
-('Michael Grant', '123 Fitness St', '555-1001', 'michael@iron.com'),
-('Sarah Lopez', '45 Wellness Ave', '555-1002', 'sarah@iron.com'),
-('Daniel Reed', '99 Strength Rd', '555-2001', 'daniel@pulse.com'),
-('Emily Cruz', '12 Cardio Blvd', '555-2002', 'emily@pulse.com');
+('Michael Grant', '123 Fitness St', '5015551001', 'michael@iron.com'),
+('Sarah Lopez', '45 Wellness Ave', '5015551002', 'sarah@iron.com'),
+('Daniel Reed', '99 Strength Rd', '5015552001', 'daniel@pulse.com'),
+('Emily Cruz', '12 Cardio Blvd', '5015552002', 'emily@pulse.com');
 
 INSERT INTO classes (studio_id, trainer_id, capacity_limit, membership_tier, name, terminated) VALUES
 (2, 2, 20, 'basic', 'Morning Yoga', FALSE),
@@ -46,10 +46,10 @@ INSERT INTO session_times (class_id, day, time) VALUES
 (4, 'sun', '09:00');
 
 INSERT INTO members (name, address, phone, email, membership_tier, expiry_date) VALUES
-('John Carter', '12 Palm St', '555-3001', 'john@gmail.com', 'basic', '2026-12-31'),
-('Lisa Morgan', '34 Pine Ave', '555-3002', 'lisa@gmail.com', 'standard', '2026-10-15'),
-('Robert King', '78 Oak Drive', '555-3003', 'robert@gmail.com', 'premium', '2027-01-01'),
-('Natalie Green', '22 Cedar Rd', '555-3004', 'natalie@gmail.com', 'standard', '2026-08-20');
+('John Carter', '12 Palm St', '5015553001', 'john@gmail.com', 'basic', '2026-12-31'),
+('Lisa Morgan', '34 Pine Ave', '5015553002', 'lisa@gmail.com', 'standard', '2026-10-15'),
+('Robert King', '78 Oak Drive', '5015553003', 'robert@gmail.com', 'premium', '2027-01-01'),
+('Natalie Green', '22 Cedar Rd', '5015553004', 'natalie@gmail.com', 'standard', '2026-08-20');
 
 INSERT INTO registrations (member_id, class_id, status) VALUES
 (1, 1, 'active'),

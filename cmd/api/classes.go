@@ -4,7 +4,6 @@ import (
 	//   "encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -253,10 +252,8 @@ func (a *applicationDependencies) listClassesHandler(w http.ResponseWriter, r *h
 	// Load the query parameters into our struct
 	// Joseph: handle conversions
 	studio_string := a.getSingleQueryParameter(queryParameters, "studio_id", "")
-
 	if studio_string != "" {
 		studio_int, err := strconv.Atoi(studio_string)
-		log.Printf("Studio int: %+v\n", studio_int)
 
 		if err == nil && studio_int != 0 {
 			queryParametersData.Studio_id = &studio_int

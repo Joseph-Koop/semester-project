@@ -40,6 +40,10 @@ type applicationDependencies struct {
     config serverConfig
     logger *slog.Logger
     classModel data.ClassModel
+    gymModel data.GymModel
+    trainerModel data.TrainerModel
+    memberModel data.MemberModel
+    studioModel data.StudioModel
 }
 
 
@@ -99,6 +103,10 @@ func main() {
         config: settings,
         logger: logger,
         classModel: data.ClassModel {DB: db},
+        gymModel: data.GymModel {DB: db},
+        trainerModel: data.TrainerModel {DB: db},
+        memberModel: data.MemberModel {DB: db},
+        studioModel: data.StudioModel {DB: db},
     }
 
 	err = appInstance.serve()
