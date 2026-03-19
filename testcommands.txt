@@ -59,3 +59,25 @@ curl -i -d '{"name": "Magnus", "address": "1st Street Mountain View Belize", "ph
 curl -X PATCH -d '{"name": "Magnus", "address": "1st Street Lake View Belize", "phone": 5013333333, "email": "mag@gmail.com"}' localhost:4000/trainers/5/update
 curl -X DELETE localhost:4000/trainers/5/delete
 
+
+REGISTRATIONS:
+curl -i localhost:4000/registrations
+curl -i localhost:4000/registrations/2
+
+curl -i -d '{"class_id": 1, "member_id": 2, "status": "active"}' localhost:4000/registrations/add
+curl -i -d '{"class_id": 2, "member_id": 1, "status": "active"}' localhost:4000/registrations/add
+curl -i -d '{"class_id": 1, "member_id": 5, "status": "active"}' localhost:4000/registrations/add
+
+curl -X PATCH -d '{"class_id": 1, "member_id": 3, "status": "dropped"}' localhost:4000/registrations/6/update
+curl -X DELETE localhost:4000/registrations/6/delete
+
+
+
+
+
+
+
+NOTES:
+Rewrite ID validation simpler (like registrations)
+Consider storing membership tier as numbers
+Check validations for registrations (expired members cannot drop a class)

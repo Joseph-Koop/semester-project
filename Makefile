@@ -23,6 +23,8 @@ db/migrations/new:
 db/migrations/up:
 	@echo 'Running up migrations...'
 	migrate -path ./migrations -database ${DB_DSN} up
+	@echo 'Running seeder...'
+	psql ${DB_DSN} -f ./seeders/seeder_up.sql
 
 ## db/migrations/down: apply all down database migrations
 .PHONY: db/migrations/down
@@ -30,3 +32,8 @@ db/migrations/down:
 	@echo 'Running down migrations...'
 	migrate -path ./migrations -database ${DB_DSN} down
 
+## db/migrations/force: apply all force database migrations
+.PHONY: db/migrations/force
+db/migrations/force:
+	@echo 'Running force migrations...'
+	migrate -path ./migrations -database ${DB_DSN} force 1

@@ -45,6 +45,30 @@ func (a *applicationDependencies) routes() http.Handler {
 	router.HandlerFunc(http.MethodPatch, "/studios/:id/update", a.updateStudioHandler)
 	router.HandlerFunc(http.MethodDelete, "/studios/:id/delete", a.deleteStudioHandler)
 
+	router.HandlerFunc(http.MethodGet, "/sessiontimes", a.listSessionTimesHandler)
+	router.HandlerFunc(http.MethodGet, "/sessiontimes/:id", a.displaySessionTimeHandler)
+	router.HandlerFunc(http.MethodPost, "/sessiontimes/add", a.postSessionTimeHandler)
+	router.HandlerFunc(http.MethodPatch, "/sessiontimes/:id/update", a.updateSessionTimeHandler)
+	router.HandlerFunc(http.MethodDelete, "/sessiontimes/:id/delete", a.deleteSessionTimeHandler)
+
+	router.HandlerFunc(http.MethodGet, "/sessions", a.listSessionsHandler)
+	router.HandlerFunc(http.MethodGet, "/sessions/:id", a.displaySessionHandler)
+	router.HandlerFunc(http.MethodPost, "/sessions/add", a.postSessionHandler)
+	router.HandlerFunc(http.MethodPatch, "/sessions/:id/update", a.updateSessionHandler)
+	router.HandlerFunc(http.MethodDelete, "/sessions/:id/delete", a.deleteSessionHandler)
+
+	router.HandlerFunc(http.MethodGet, "/registrations", a.listRegistrationsHandler)
+	router.HandlerFunc(http.MethodGet, "/registrations/:id", a.displayRegistrationHandler)
+	router.HandlerFunc(http.MethodPost, "/registrations/add", a.postRegistrationHandler)
+	router.HandlerFunc(http.MethodPatch, "/registrations/:id/update", a.updateRegistrationHandler)
+	router.HandlerFunc(http.MethodDelete, "/registrations/:id/delete", a.deleteRegistrationHandler)
+
+	router.HandlerFunc(http.MethodGet, "/attendance", a.listAttendancesHandler)
+	router.HandlerFunc(http.MethodGet, "/attendance/:id", a.displayAttendanceHandler)
+	router.HandlerFunc(http.MethodPost, "/attendance/add", a.postAttendanceHandler)
+	router.HandlerFunc(http.MethodPatch, "/attendance/:id/update", a.updateAttendanceHandler)
+	router.HandlerFunc(http.MethodDelete, "/attendance/:id/delete", a.deleteAttendanceHandler)
+
 	router.Handler(http.MethodGet, "/metrics", expvar.Handler())
 
 	

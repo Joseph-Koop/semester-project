@@ -44,6 +44,10 @@ type applicationDependencies struct {
     trainerModel data.TrainerModel
     memberModel data.MemberModel
     studioModel data.StudioModel
+    sessionTimeModel data.SessionTimeModel
+    sessionModel data.SessionModel
+    registrationModel data.RegistrationModel
+    attendanceModel data.AttendanceModel
 }
 
 
@@ -107,6 +111,10 @@ func main() {
         trainerModel: data.TrainerModel {DB: db},
         memberModel: data.MemberModel {DB: db},
         studioModel: data.StudioModel {DB: db},
+        sessionTimeModel: data.SessionTimeModel {DB: db},
+        sessionModel: data.SessionModel {DB: db},
+        registrationModel: data.RegistrationModel {DB: db},
+        attendanceModel: data.AttendanceModel {DB: db},
     }
 
 	err = appInstance.serve()
