@@ -10,5 +10,8 @@ This project is a web application implemented in Go. It represents my ongoing se
   
 **Updates:**  
 Lab #3  | Feb 17 | ReadJSON and writeJSON  
-Quiz #3 | Feb 19 | Migrations and Database Setup  
+Quiz #3 | Feb 19 | Migrations and database setup  
 Lab #4  | Feb 24 | CRUD  
+Lab #5  | Mar 3  | Pagination, sorting, and filtering  
+Lab #6  | Mar 10 | Rate Limiting and graceful shutdown  
+Test #1 | Mar 19 | Advanced middleware and extended API  
