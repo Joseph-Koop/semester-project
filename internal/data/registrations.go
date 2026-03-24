@@ -40,7 +40,7 @@ func (c RegistrationModel) ValidateRegistration(v *validator.Validator, registra
 	defer cancel()
 	err := c.DB.QueryRowContext(ctx, query, registration.Member_id).Scan(&member_membership_tier, &member_expiry_date)
 	if err != nil {
-		v.AddError("member_id", "Member not found.")
+		v.AddError("member_id", "Internal database operation failed.")
 		return
 	}
 	
@@ -76,11 +76,50 @@ func (c RegistrationModel) ValidateRegistration(v *validator.Validator, registra
 		return
 	}
 
+
+
+	conflictQuery := `
+		SELECT 1
+		FROM registrations r
+		JOIN session_times s_existing 
+			ON r.class_id = s_existing.class_id
+		JOIN session_times s_new
+			ON s_new.class_id = $2
+		WHERE r.member_id = $1
+		AND r.status = 'active'
+		AND s_existing.day = s_new.day
+		AND s_existing.time < (s_new.time + (s_new.duration || ' minutes')::interval)
+		AND s_new.time < (s_existing.time + (s_existing.duration || ' minutes')::interval)
+		LIMIT 1;
+	`
+
+	var exists int
+
+	ctx4, cancel4 := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel4()
+
+	err = c.DB.QueryRowContext(ctx4, conflictQuery,
+		registration.Member_id,
+		registration.Class_id,
+	).Scan(&exists)
+
+	if err == nil {
+		v.AddError("class_id", "Schedule conflict with existing class.")
+		return
+	}
+
+	if err != sql.ErrNoRows {
+		v.AddError("member_id", "Internal database operation failed.")
+		return
+	}
+
+
+
+
+
 	if class_terminated == true{
 		v.AddError("class_id", "This class is no longer active.")
 	}
-
-	fmt.Println(current_class_quantity, class_capacity_limit)
 
 	if(current_class_quantity >= class_capacity_limit){
 		v.AddError("class_id", "The class capacity is full.")

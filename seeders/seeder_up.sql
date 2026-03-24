@@ -38,12 +38,14 @@ INSERT INTO classes (studio_id, trainer_id, capacity_limit, membership_tier, nam
 
 INSERT INTO session_times (class_id, day, time, duration) VALUES
 (1, 'mon', '08:00', 60),
-(1, 'wed', '08:00', 60),
-(2, 'tue', '18:00', 60),
+(1, 'wed', '09:00', 60),
+(2, 'tue', '10:00', 60),
 (2, 'thu', '18:00', 60),
 (3, 'fri', '17:00', 60),
-(4, 'sat', '09:00', 60),
-(4, 'sun', '09:00', 60);
+(4, 'sat', '12:00', 60),
+(4, 'sun', '15:00', 60),
+(5, 'mon', '09:00', 60),
+(5, 'wed', '06:00', 183);
 
 INSERT INTO members (name, address, phone, email, membership_tier, expiry_date) VALUES
 ('John Carter', '12 Palm St', '5015553001', 'john@gmail.com', 'basic', '2026-12-31'),

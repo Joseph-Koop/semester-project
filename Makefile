@@ -29,8 +29,23 @@ test/classregistration:
 	@curl -d '{"class_id": 12, "member_id": 1, "status": "active"}' localhost:4000/registrations/add
 	@echo 'Testing expired member registering...'
 	@curl -d '{"class_id": 1, "member_id": 5, "status": "active"}' localhost:4000/registrations/add
+	@echo 'Testing member registering with schedule conflicts...'
+	@curl -d '{"class_id": 5, "member_id": 1, "status": "active"}' localhost:4000/registrations/add
 	@echo 'Testing normal class registration...'
 	@curl -d '{"class_id": 1, "member_id": 2, "status": "active"}' localhost:4000/registrations/add
+
+.PHONY: test/sessiontimes
+test/sessiontimes:
+	@echo 'Testing session overlap of same class...'
+	@curl -d '{"class_id": 1, "day": "wed", "time": "8:00", "duration": 61}' localhost:4000/sessiontimes/add
+	@echo 'Testing trainer overlap...'
+	@curl -d '{"class_id": 6, "day": "wed", "time": "9:30", "duration": 40}' localhost:4000/sessiontimes/add
+	@echo 'Testing studio booking overlap...'
+	@curl -d '{"class_id": 7, "day": "mon", "time": "7:30", "duration": 40}' localhost:4000/sessiontimes/add
+	@echo 'Testing session posting on terminated class...'
+	@curl -d '{"class_id": 12, "day": "mon", "time": "7:30", "duration": 40}' localhost:4000/sessiontimes/add
+	@echo 'Testing normal session time posting...'
+	@curl -d '{"class_id": 6, "day": "wed", "time": "10:30", "duration": 80}' localhost:4000/sessiontimes/add
 
 ## db/psql: connect to the database using psql (terminal)
 .PHONY: db/psql

@@ -21,16 +21,123 @@ type SessionTime struct {
 	Version   int32     `json:"version"`
 }
 
-func ValidateSessionTime(v *validator.Validator, sessionTime *SessionTime) {
+func (c SessionTimeModel) ValidateSessionTime(v *validator.Validator, sessionTime *SessionTime) {
 
 	v.Check(len(strconv.Itoa(sessionTime.Class_id)) > 0, "class_id", "Must be an existing class.")
 	
-    v.Check(sessionTime.Day == "sun" || sessionTime.Day == "mon" || sessionTime.Day == "tue" || sessionTime.Day == "wed" || sessionTime.Day == "thr" || sessionTime.Day == "fri" || sessionTime.Day == "sat", "day", "Must be one of the valid options.")
+    v.Check(sessionTime.Day == "sun" || sessionTime.Day == "mon" || sessionTime.Day == "tue" || sessionTime.Day == "wed" || sessionTime.Day == "thu" || sessionTime.Day == "fri" || sessionTime.Day == "sat", "day", "Must be one of the valid options.")
 
 	v.Check(!sessionTime.Time.IsZero(), "time", "Must be provided.")
 	v.Check(sessionTime.Time.Second() == 0, "time", "Seconds are not allowed.")
 
 	v.Check(len(strconv.Itoa(sessionTime.Duration)) > 0 && len(strconv.Itoa(sessionTime.Duration)) <= 240, "class_id", "Must be between 1 minute and 4 hours.")
+
+
+	sameTimeQuery := `
+        SELECT 1
+        FROM session_times s
+        WHERE s.class_id = $1
+			AND s.day = $2
+			AND s.time < ($3 + ($4 || ' minutes')::interval)
+			AND $3 < (s.time + (s.duration || ' minutes')::interval)
+        LIMIT 1;
+    `
+
+	var exists1 int
+
+	ctx1, cancel1 := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel1()
+
+	err := c.DB.QueryRowContext(ctx1, sameTimeQuery, sessionTime.Class_id, sessionTime.Day,sessionTime.Time.Format("15:04:05"), sessionTime.Duration, ).Scan(&exists1)
+
+	if err == nil {
+		v.AddError("time", "Session conflicts with existing session of this class.")
+		return
+	}
+
+	if err != sql.ErrNoRows {
+		v.AddError("time", "Internal database operation failed.")
+		return
+	}
+
+
+	trainerConflictQuery := `
+		SELECT 1
+		FROM session_times s_existing
+		JOIN classes c_existing ON s_existing.class_id = c_existing.id
+		JOIN classes c_new      ON c_new.id = $1
+		WHERE c_existing.trainer_id = c_new.trainer_id
+			AND s_existing.day = $2
+			AND s_existing.time < ($3 + ($4 || ' minutes')::interval)
+			AND $3 < (s_existing.time + (s_existing.duration || ' minutes')::interval)
+		LIMIT 1;
+    `
+
+	var exists2 int
+
+	ctx2, cancel2 := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel2()
+
+	err = c.DB.QueryRowContext(ctx2, trainerConflictQuery, sessionTime.Class_id, sessionTime.Day, sessionTime.Time.Format("15:04:05"), sessionTime.Duration, ).Scan(&exists2)
+
+	if err == nil {
+		v.AddError("time", "Trainer is occupied during this session time.")
+		return
+	}
+
+	if err != sql.ErrNoRows {
+		v.AddError("time", "Internal database operation failed.")
+		return
+	}
+
+
+	studioConflictQuery := `
+		SELECT 1
+        FROM session_times s_existing
+        JOIN classes c_existing ON s_existing.class_id = c_existing.id
+        JOIN classes c_new      ON c_new.id = $1
+        JOIN studios st         ON c_existing.studio_id = st.id
+        WHERE st.access = 'classes'
+			AND c_existing.studio_id = c_new.studio_id
+			AND s_existing.day = $2
+			AND s_existing.time < ($3 + ($4 || ' minutes')::interval)
+			AND $3 < (s_existing.time + (s_existing.duration || ' minutes')::interval)
+        LIMIT 1;
+    `
+
+	var exists3 int
+
+	ctx3, cancel3 := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel3()
+
+	err = c.DB.QueryRowContext(ctx3, studioConflictQuery, sessionTime.Class_id, sessionTime.Day,sessionTime.Time.Format("15:04:05"), sessionTime.Duration, ).Scan(&exists3)
+
+	if err == nil {
+		v.AddError("time", "Studio is occupied during this session time.")
+		return
+	}
+
+	if err != sql.ErrNoRows {
+		v.AddError("time", "Internal database operation failed.")
+		return
+	}
+
+
+	var class_terminated bool
+	terminatedQuery := `
+	SELECT terminated FROM CLASSES WHERE id = $1
+	`
+	ctx4, cancel4 := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel4()
+	err = c.DB.QueryRowContext(ctx4, terminatedQuery, sessionTime.Class_id).Scan(&class_terminated)
+	if err != nil {
+		v.AddError("class_id", "Class not found.")
+		return
+	}
+
+	if class_terminated == true{
+		v.AddError("class_id", "This class is no longer active.")
+	}
 }
 
 type SessionTimeModel struct {
@@ -45,7 +152,7 @@ func (c SessionTimeModel) Insert(sessionTime *SessionTime) error {
         RETURNING id, created_at, version
         `
 
-	args := []any{sessionTime.Class_id, sessionTime.Day, sessionTime.Time, sessionTime.Duration}
+	args := []any{sessionTime.Class_id, sessionTime.Day, sessionTime.Time.Format("15:04:05"), sessionTime.Duration}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -91,7 +198,7 @@ func (c SessionTimeModel) Update(sessionTime *SessionTime) error {
         WHERE id = $5
         RETURNING version
       `
-	args := []any{sessionTime.Class_id, sessionTime.Day, sessionTime.Time, sessionTime.Duration, sessionTime.ID}
+	args := []any{sessionTime.Class_id, sessionTime.Day, sessionTime.Time.Format("15:04:05"), sessionTime.Duration, sessionTime.ID}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -144,7 +251,7 @@ func (c SessionTimeModel) GetAll(class_id *int, day *string, sessionTime *time.T
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := c.DB.QueryContext(ctx, query, class_id, day, sessionTime, duration, filters.limit(), filters.offset())
+	rows, err := c.DB.QueryContext(ctx, query, class_id, day, sessionTime.Format("15:04:05"), duration, filters.limit(), filters.offset())
 
 	if err != nil {
 		return nil, Metadata{}, err

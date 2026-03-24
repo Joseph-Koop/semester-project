@@ -13,28 +13,37 @@ import (
 
 func (a *applicationDependencies) postSessionTimeHandler(w http.ResponseWriter, r *http.Request) {
 	var incomingData struct {
-		Class_id            int `json:"class_id"`
-		Day             string `json:"day"`
-		Time            	time.Time `json:"time"`
-		Duration            int `json:"duration"`
+		Class_id int    `json:"class_id"`
+		Day      string `json:"day"`
+		Time     string `json:"time"` // Accept as string
+		Duration int    `json:"duration"`
 	}
-	
+
 	err := a.readJSON(w, r, &incomingData)
 	if err != nil {
 		a.badRequestResponse(w, r, err)
 		return
 	}
-	
+
+	parsedTime, err := time.Parse("15:04", incomingData.Time)
+	if err != nil {
+		a.failedValidationResponse(w, r, map[string]string{
+			"time": "Invalid time format (use HH:MM)",
+		})
+		return
+	}
+
+	// Now use parsedTime in your SessionTime struct
 	sessionTime := &data.SessionTime{
-		Class_id: 		incomingData.Class_id,
-		Day: 	incomingData.Day,
-		Time: 		incomingData.Time,
-		Duration: 		incomingData.Duration,
+		Class_id: incomingData.Class_id,
+		Day:      incomingData.Day,
+		Time:     parsedTime,
+		Duration: incomingData.Duration,
 	}
 	
 	v := validator.New()
 	
-	data.ValidateSessionTime(v, sessionTime)
+	a.sessionTimeModel.ValidateSessionTime(v, sessionTime)
 	if !v.IsEmpty() {
 		a.failedValidationResponse(w, r, v.Errors) 
 		return
@@ -108,16 +117,23 @@ func (a *applicationDependencies) updateSessionTimeHandler(w http.ResponseWriter
 	}
 	
 	var incomingData struct {
-		Class_id      	*int `json:"class_id"`
-		Day     *string `json:"day"`
-		Time      	*time.Time `json:"time"`
-		Duration      	*int `json:"duration"`
+		Class_id *int    `json:"class_id"`
+		Day      *string `json:"day"`
+		Time     *string `json:"time"` // Accept as string
+		Duration *int    `json:"duration"`
 	}
 
-	
 	err = a.readJSON(w, r, &incomingData)
 	if err != nil {
 		a.badRequestResponse(w, r, err)
+		return
+	}
+
+	parsedTime, err := time.Parse("15:04", *incomingData.Time)
+	if err != nil {
+		a.failedValidationResponse(w, r, map[string]string{
+			"time": "Invalid time format (use HH:MM)",
+		})
 		return
 	}
 	
@@ -130,7 +146,7 @@ func (a *applicationDependencies) updateSessionTimeHandler(w http.ResponseWriter
 	}
 	
 	if incomingData.Time != nil {
-		sessionTime.Time = *incomingData.Time
+		sessionTime.Time = parsedTime
 	}
 	
 	if incomingData.Duration != nil {
@@ -138,7 +154,7 @@ func (a *applicationDependencies) updateSessionTimeHandler(w http.ResponseWriter
 	}
 	
 	v := validator.New()
-	data.ValidateSessionTime(v, sessionTime)
+	a.sessionTimeModel.ValidateSessionTime(v, sessionTime)
 	if !v.IsEmpty() {
 		a.failedValidationResponse(w, r, v.Errors)
 		return
