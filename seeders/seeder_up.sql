@@ -19,7 +19,7 @@ INSERT INTO classes (studio_id, trainer_id, capacity_limit, membership_tier, nam
 (4, 4, 15, 'standard', 'Spin Blast', FALSE),
 (2, 1, 25, 'premium', 'Advanced Pilates', FALSE),
 (4, 3, 30, 'standard', 'HIIT Power', FALSE),
-(1, 1, 12, 'basic', 'Sunrise Stretch', FALSE),
+(1, 1, 2, 'basic', 'Sunrise Stretch', FALSE),
 (3, 2, 40, 'premium', 'Strength Lab', FALSE),
 (2, 4, 18, 'standard', 'Core Crusher', FALSE),
 (1, 3, 50, 'premium', 'Elite Bootcamp', FALSE),
@@ -57,7 +57,10 @@ INSERT INTO registrations (member_id, class_id, status) VALUES
 (2, 2, 'active'),
 (3, 3, 'active'),
 (4, 4, 'active'),
-(2, 4, 'dropped');
+(2, 4, 'active'),
+(3, 5, 'active'),
+(4, 5, 'active'),
+(5, 5, 'dropped');
 
 INSERT INTO sessions (class_id) VALUES
 (1),

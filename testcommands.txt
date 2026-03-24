@@ -81,3 +81,4 @@ NOTES:
 Rewrite ID validation simpler (like registrations)
 Consider storing membership tier as numbers
 Check validations for registrations (expired members cannot drop a class)
+Other validations (capacity limit, terminated)

@@ -73,7 +73,8 @@ func (a *applicationDependencies) routes() http.Handler {
 
 	
 	// router.HandlerFunc(http.MethodPut, "/classes/:id/put", a.updateClassHandler)
+	
 
-	return a.logRequest(a.metrics(a.recoverPanic(a.compressResponse(a.enableCORS(a.rateLimit(router))))))
+	return a.recoverPanic(a.logRequest(a.metrics(a.rateLimit(a.enableCORS(a.compressResponse(router))))))
 
 }

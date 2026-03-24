@@ -3,8 +3,34 @@ include .envrc
 ## run/api: run the cmd/api application
 .PHONY: run/api
 run/api:
-	@echo  'Running application…'
+	@echo  'Running application...'
 	@go run ./cmd/api -port=${PORT} -env=${ENVIRONMENT} -db-dsn=${DB_DSN} -limiter-rps=${LIMITER_RPS} -limiter-burst=${LIMITER_BURST} -limiter-enabled=${LIMITER_ENABLED} -cors-trusted-origins=${CORS_TRUSTED_ORIGINS}
+
+# test the rate limiter
+.PHONY: test/ratelimiter
+test/ratelimiter:
+	@echo 'Testing rate limiter...'
+	@for i in $$(seq 1 10); do curl -i localhost:4000/classes/1; done
+
+.PHONY: test/responsecompression
+test/responsecompression:
+	@echo 'Testing response size without gzip encoding...'
+	@curl -i localhost:4000/classes
+	@echo 'Testing response size with gzip encoding...'
+	@curl -i --compressed localhost:4000/classes
+
+.PHONY: test/classregistration
+test/classregistration:
+	@echo 'Testing member registering with lower membership tier...'
+	@curl -d '{"class_id": 2, "member_id": 1, "status": "active"}' localhost:4000/registrations/add
+	@echo 'Testing member registering into full class...'
+	@curl -d '{"class_id": 5, "member_id": 2, "status": "active"}' localhost:4000/registrations/add
+	@echo 'Testing member registering into a terminated class...'
+	@curl -d '{"class_id": 12, "member_id": 1, "status": "active"}' localhost:4000/registrations/add
+	@echo 'Testing expired member registering...'
+	@curl -d '{"class_id": 1, "member_id": 5, "status": "active"}' localhost:4000/registrations/add
+	@echo 'Testing normal class registration...'
+	@curl -d '{"class_id": 1, "member_id": 2, "status": "active"}' localhost:4000/registrations/add
 
 ## db/psql: connect to the database using psql (terminal)
 .PHONY: db/psql

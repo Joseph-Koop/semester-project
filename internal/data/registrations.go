@@ -43,23 +43,47 @@ func (c RegistrationModel) ValidateRegistration(v *validator.Validator, registra
 		v.AddError("member_id", "Member not found.")
 		return
 	}
-
+	
 	var class_membership_tier string
+	var class_capacity_limit int
+	var class_terminated bool
 	query2 := `
-		SELECT membership_tier FROM CLASSES WHERE id = $1
+	SELECT membership_tier, capacity_limit, terminated FROM CLASSES WHERE id = $1
 	`
 	ctx2, cancel2 := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel2()
-	err = c.DB.QueryRowContext(ctx2, query2, registration.Class_id).Scan(&class_membership_tier)
+	err = c.DB.QueryRowContext(ctx2, query2, registration.Class_id).Scan(&class_membership_tier, &class_capacity_limit, &class_terminated)
 	if err != nil {
 		v.AddError("class_id", "Class not found.")
 		return
 	}
-
+	
 	hierarchy := map[string]int{
 		"basic": 1,
 		"standard": 2,
 		"premium": 3,
+	}
+
+	var current_class_quantity int
+	query3 := `
+		SELECT COUNT(*) FROM registrations WHERE status = 'active' AND class_id = $1
+	`
+	ctx3, cancel3 := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel3()
+	err = c.DB.QueryRowContext(ctx3, query3, registration.Class_id).Scan(&current_class_quantity)
+	if err != nil {
+		v.AddError("member_id", "Internal count operation failed.")
+		return
+	}
+
+	if class_terminated == true{
+		v.AddError("class_id", "This class is no longer active.")
+	}
+
+	fmt.Println(current_class_quantity, class_capacity_limit)
+
+	if(current_class_quantity >= class_capacity_limit){
+		v.AddError("class_id", "The class capacity is full.")
 	}
 
 	if(hierarchy[member_membership_tier] < hierarchy[class_membership_tier]){
