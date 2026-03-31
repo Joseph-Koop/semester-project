@@ -48,6 +48,7 @@ type applicationDependencies struct {
     sessionModel data.SessionModel
     registrationModel data.RegistrationModel
     attendanceModel data.AttendanceModel
+    userModel data.UserModel
 }
 
 
@@ -115,6 +116,7 @@ func main() {
         sessionModel: data.SessionModel {DB: db},
         registrationModel: data.RegistrationModel {DB: db},
         attendanceModel: data.AttendanceModel {DB: db},
+        userModel: data.UserModel {DB: db},
     }
 
 	err = appInstance.serve()

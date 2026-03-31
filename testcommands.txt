@@ -82,3 +82,9 @@ Rewrite ID validation simpler (like registrations)
 Consider storing membership tier as numbers
 Check validations for registrations (expired members cannot drop a class)
 Other validations (capacity limit, terminated)
+
+
+
+
+
+curl -i -d '{"username":"Joseph Koop", "email":"jkoop@ub.edu.bz", "password": "password"}' localhost:4000/users/add

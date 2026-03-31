@@ -5,3 +5,5 @@ import (
 )
 
 var ErrRecordNotFound = errors.New("record not found")
+var ErrEditConflict   = errors.New("edit conflict")
+

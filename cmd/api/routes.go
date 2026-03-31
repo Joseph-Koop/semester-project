@@ -69,6 +69,12 @@ func (a *applicationDependencies) routes() http.Handler {
 	router.HandlerFunc(http.MethodPatch, "/attendance/:id/update", a.updateAttendanceHandler)
 	router.HandlerFunc(http.MethodDelete, "/attendance/:id/delete", a.deleteAttendanceHandler)
 
+	// router.HandlerFunc(http.MethodGet, "/users", a.listUsersHandler)
+	// router.HandlerFunc(http.MethodGet, "/users/:id", a.displayUserHandler)
+	router.HandlerFunc(http.MethodPost, "/users/add", a.registerUserHandler)
+	// router.HandlerFunc(http.MethodPatch, "/users/:id/update", a.updateUserHandler)
+	// router.HandlerFunc(http.MethodDelete, "/users/:id/delete", a.deleteUserHandler)
+
 	router.Handler(http.MethodGet, "/metrics", expvar.Handler())
 
 	

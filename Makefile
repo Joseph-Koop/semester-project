@@ -45,7 +45,7 @@ test/sessiontimes:
 	@echo 'Testing session posting on terminated class...'
 	@curl -d '{"class_id": 12, "day": "mon", "time": "7:30", "duration": 40}' localhost:4000/sessiontimes/add
 	@echo 'Testing normal session time posting...'
-	@curl -d '{"class_id": 6, "day": "wed", "time": "10:30", "duration": 80}' localhost:4000/sessiontimes/add
+	@curl -d '{"class_id": 6, "day": "fri", "time": "10:30", "duration": 80}' localhost:4000/sessiontimes/add
 
 ## db/psql: connect to the database using psql (terminal)
 .PHONY: db/psql
