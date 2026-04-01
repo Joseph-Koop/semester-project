@@ -4,7 +4,7 @@ include .envrc
 .PHONY: run/api
 run/api:
 	@echo  'Running application...'
-	@go run ./cmd/api -port=${PORT} -env=${ENVIRONMENT} -db-dsn=${DB_DSN} -limiter-rps=${LIMITER_RPS} -limiter-burst=${LIMITER_BURST} -limiter-enabled=${LIMITER_ENABLED} -cors-trusted-origins=${CORS_TRUSTED_ORIGINS}
+	@go run ./cmd/api -port=${PORT} -env=${ENVIRONMENT} -db-dsn=${DB_DSN} -limiter-rps=${LIMITER_RPS} -limiter-burst=${LIMITER_BURST} -limiter-enabled=${LIMITER_ENABLED} -cors-trusted-origins=${CORS_TRUSTED_ORIGINS} -smtp-host=${MAILTRAP_HOST} -smtp-port=${MAILTRAP_PORT} -smtp-username=${MAILTRAP_USERNAME} -smtp-password=${MAILTRAP_PASSWORD} -smtp-sender=${MAILTRAP_SENDER}
 
 # test the rate limiter
 .PHONY: test/ratelimiter

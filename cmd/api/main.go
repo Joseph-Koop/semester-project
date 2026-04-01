@@ -7,12 +7,14 @@ import (
 	"os"
     "runtime"
     "strings"
+    "sync"
 	"time"
 	"context"
 	"database/sql"
 
 	_ "github.com/lib/pq"
     "github.com/Joseph-Koop/json-project/internal/data"
+    "github.com/Joseph-Koop/json-project/internal/mailer"
 )
 
 const appVersion = "1.0.0"
@@ -29,8 +31,12 @@ type serverConfig struct {
         enabled bool                     // enable or disable rate limiter
     }
     smtp struct {
-
-    }
+        host     string
+        port     int
+        username string
+        password string
+        sender   string
+    }  
     cors struct {
         trustedOrigins []string
     }
@@ -49,6 +55,8 @@ type applicationDependencies struct {
     registrationModel data.RegistrationModel
     attendanceModel data.AttendanceModel
     userModel data.UserModel
+    mailer mailer.Mailer
+    wg  sync.WaitGroup           // need this later for background jobs
 }
 
 
@@ -69,6 +77,18 @@ func main() {
             settings.cors.trustedOrigins = strings.Fields(val)
             return nil
         })
+
+    flag.StringVar(&settings.smtp.host, "smtp-host", "sandbox.smtp.mailtrap.io", "SMTP host")
+    // We have port 25, 465, 587, 2525. If 25 doesn't work choose another
+    flag.IntVar(&settings.smtp.port, "smtp-port", 25, "SMTP port")
+    // Use your Username value provided by Mailtrap
+    flag.StringVar(&settings.smtp.username, "smtp-username", "23cf564619d6c4", "SMTP username")
+    // Use your Password value provided by Mailtrap
+    flag.StringVar(&settings.smtp.password, "smtp-password", "daa70c7c1ab841", "SMTP password")
+
+    flag.StringVar(&settings.smtp.sender, "smtp-sender", "Comments Community <no-reply@gymchain.joseph.net>", "SMTP sender")
+
+
     flag.Parse()
 
 
@@ -117,6 +137,10 @@ func main() {
         registrationModel: data.RegistrationModel {DB: db},
         attendanceModel: data.AttendanceModel {DB: db},
         userModel: data.UserModel {DB: db},
+
+        mailer: mailer.New(settings.smtp.host, settings.smtp.port,
+        settings.smtp.username, settings.smtp.password, settings.smtp.sender),
+
     }
 
 	err = appInstance.serve()
@@ -153,3 +177,4 @@ func openDB(settings serverConfig) (*sql.DB, error) {
     return db, nil
 
 } 
+

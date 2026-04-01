@@ -88,3 +88,7 @@ Other validations (capacity limit, terminated)
 
 
 curl -i -d '{"username":"Joseph Koop", "email":"jkoop@ub.edu.bz", "password": "password"}' localhost:4000/users/add
+
+Mailtrap2026!
+
+curl -w '\nTime: %{time_total}\n' -d '{"username": "James Con", "email": "jcon@example.com", "password": "cinnamonapple"}' localhost:4000/users/add

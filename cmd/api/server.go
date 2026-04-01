@@ -38,9 +38,17 @@ func (a *applicationDependencies) serve() error {
 		// create a context
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
-		// initiate the shutdown. If all okay this returns nil
-		shutdownError <- apiServer.Shutdown(ctx)
+		// we will only write to the error channel if there is an error
+		err := apiServer.Shutdown(ctx)
+		if err != nil {
+			shutdownError <- err
+		}
+		// Wait for background tasks to complete
+		a.logger.Info("Completing background tasks.", "address", apiServer.Addr)
+		a.wg.Wait()
+		shutdownError <- nil           // successful shutdown
 	}()
+
 
 	// something went wrong during shutdown if we don't get ErrServerClosed()
 	// this only happens when we issue the shutdown command from our goroutine

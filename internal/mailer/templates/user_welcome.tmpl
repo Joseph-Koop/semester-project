@@ -1,0 +1,32 @@
+{{define "subject"}}Welcome to the Iron Fortress Community!{{end}}
+
+{{define "plainBody"}}
+Hi {{.Username}},
+
+Thanks for signing up for a Iron Fortress Community account. We're excited to have you on board!
+For future reference, your user ID number is {{.ID}}.
+
+Thanks,
+The Iron Fortress Community Team
+{{end}}
+
+{{define "htmlBody"}}
+<!doctype html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+
+<body>
+    <p>Hi, {{.Username}}</p>
+    <br>
+    <p>Thanks for signing up for an Iron Fortress account. We're excited to have you on board!</p>
+    <p>For future reference, your user ID number is {{.ID}}.</p>
+    <br>
+    <p>Thanks,</p>
+    <p>The Iron Fortress Community Team</p>
+</body>
+
+</html>
+{{end}}
