@@ -12,6 +12,10 @@ import (
    	"golang.org/x/crypto/bcrypt"
 )
 
+// We create an anonymous user variable of type User. The fields are empty to 
+// denote we don't have any information about the user - hence anonymous.
+var AnonymousUser = &User{}
+
 type User struct {
     ID         int64		     `json:"id"`
     CreatedAt  time.Time   `json:"created_at"`
@@ -20,6 +24,13 @@ type User struct {
     Password   password   `json:"-"`
     Activated  bool       `json:"activated"`
     Version     int        `json:"-"`  
+}
+
+// Let's check if the current user is anonymous
+// Note: Go will compare the addresses to determine if they are same,
+// not if they have the same field values
+func (u *User) IsAnonymous() bool {
+    return u == AnonymousUser
 }
 
 // define the password type (the plaintext + hashed password) 
@@ -180,7 +191,7 @@ func (u UserModel) Update (user *User) error {
     defer cancel()
 
     err := u.DB.QueryRowContext(ctx, query, args...).Scan(&user.Version)
-// Check for errors during update 
+    // Check for errors during update 
     if err != nil {
         switch {
             case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:

@@ -77,3 +77,18 @@ a.errorResponseJSON(w, r, http.StatusConflict, message, nil)
 
 }
 
+// Return a 401 status code
+func (a *applicationDependencies) invalidCredentialsResponse(w http.ResponseWriter, r *http.Request) {
+    message := "Invalid authentication credentials."
+    a.errorResponseJSON(w, r, http.StatusUnauthorized, message, nil)
+}
+
+// We set the WWW-Authenticate header to give a hint to the user as
+// to what they need to provide. Don't want to leave them guessing
+func (a *applicationDependencies)invalidAuthenticationTokenResponse(w http.ResponseWriter, r *http.Request)  {
+
+     w.Header().Set("WWW-Authenticate", "Bearer")
+
+	message := "Invalid or missing authentication token."
+	a.errorResponseJSON(w, r, http.StatusUnauthorized, message, nil)
+}

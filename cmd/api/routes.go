@@ -73,6 +73,8 @@ func (a *applicationDependencies) routes() http.Handler {
 	// router.HandlerFunc(http.MethodGet, "/users/:id", a.displayUserHandler)
 	router.HandlerFunc(http.MethodPost, "/users/add", a.registerUserHandler)
 	router.HandlerFunc(http.MethodPut, "/users/activated", a.activateUserHandler)
+	router.HandlerFunc(http.MethodPost, "/tokens/authentication", a.createAuthenticationTokenHandler)
+
 	// router.HandlerFunc(http.MethodPatch, "/users/:id/update", a.updateUserHandler)
 	// router.HandlerFunc(http.MethodDelete, "/users/:id/delete", a.deleteUserHandler)
 
@@ -86,6 +88,6 @@ func (a *applicationDependencies) routes() http.Handler {
 	// router.HandlerFunc(http.MethodPut, "/classes/:id/put", a.updateClassHandler)
 	
 
-	return a.recoverPanic(a.logRequest(a.metrics(a.rateLimit(a.enableCORS(a.compressResponse(router))))))
+	return a.recoverPanic(a.logRequest(a.metrics(a.rateLimit(a.authenticate(a.enableCORS(a.compressResponse(router)))))))
 
 }

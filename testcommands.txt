@@ -94,3 +94,7 @@ Mailtrap2026!
 curl -w '\nTime: %{time_total}\n' -d '{"username": "James Con", "email": "jcon@example.com", "password": "cinnamonapple"}' localhost:4000/users/add
 
 curl -X PUT -d '{"token": "KXCSRGFLDCLICFSERAMGFU6ISY"}' localhost:4000/users/activated
+
+curl -d '{"email": "jcon@example.com", "password": "cinnamonapple"}' localhost:4000/tokens/authentication
+
+curl -i -H "Authorization: Bearer WWQT5PSYADWEXZQOEBRCRCCOLE" localhost:4000/classes
