@@ -72,10 +72,15 @@ func (a *applicationDependencies) routes() http.Handler {
 	// router.HandlerFunc(http.MethodGet, "/users", a.listUsersHandler)
 	// router.HandlerFunc(http.MethodGet, "/users/:id", a.displayUserHandler)
 	router.HandlerFunc(http.MethodPost, "/users/add", a.registerUserHandler)
+	router.HandlerFunc(http.MethodPut, "/users/activated", a.activateUserHandler)
 	// router.HandlerFunc(http.MethodPatch, "/users/:id/update", a.updateUserHandler)
 	// router.HandlerFunc(http.MethodDelete, "/users/:id/delete", a.deleteUserHandler)
 
 	router.Handler(http.MethodGet, "/metrics", expvar.Handler())
+
+	// We use PUT instead of POST because PUT is idempotent 
+	// and appropriate for this endpoint.  The activation
+	// should only happens once, also we are not creating a resource
 
 	
 	// router.HandlerFunc(http.MethodPut, "/classes/:id/put", a.updateClassHandler)

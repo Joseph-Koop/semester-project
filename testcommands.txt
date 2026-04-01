@@ -92,3 +92,5 @@ curl -i -d '{"username":"Joseph Koop", "email":"jkoop@ub.edu.bz", "password": "p
 Mailtrap2026!
 
 curl -w '\nTime: %{time_total}\n' -d '{"username": "James Con", "email": "jcon@example.com", "password": "cinnamonapple"}' localhost:4000/users/add
+
+curl -X PUT -d '{"token": "KXCSRGFLDCLICFSERAMGFU6ISY"}' localhost:4000/users/activated

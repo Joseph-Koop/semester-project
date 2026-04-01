@@ -55,6 +55,7 @@ type applicationDependencies struct {
     registrationModel data.RegistrationModel
     attendanceModel data.AttendanceModel
     userModel data.UserModel
+    tokenModel data.TokenModel
     mailer mailer.Mailer
     wg  sync.WaitGroup           // need this later for background jobs
 }
@@ -137,6 +138,7 @@ func main() {
         registrationModel: data.RegistrationModel {DB: db},
         attendanceModel: data.AttendanceModel {DB: db},
         userModel: data.UserModel {DB: db},
+        tokenModel: data.TokenModel {DB: db},
 
         mailer: mailer.New(settings.smtp.host, settings.smtp.port,
         settings.smtp.username, settings.smtp.password, settings.smtp.sender),
