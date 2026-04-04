@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS studios (
 
 CREATE TABLE IF NOT EXISTS trainers (
     id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(150) NOT NULL,
     address TEXT,
     phone VARCHAR(30),
@@ -56,6 +57,7 @@ CREATE TABLE IF NOT EXISTS session_times (
 
 CREATE TABLE IF NOT EXISTS members (
     id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(150) NOT NULL,
     address TEXT,
     phone VARCHAR(30),

@@ -1,6 +1,6 @@
 go run ./cmd/api -port=4000 -env=development -limiter-burst=5 -limiter-rps=2 -limiter-enabled=true
            
-           -db-dsn=${COMMENTS_DB_DSN}
+           -db-dsn=${CLASSES_DB_DSN}
 
 RATE LIMITING
 for i in {1..10}; do curl localhost:4000/classes/1; done
@@ -83,18 +83,53 @@ Consider storing membership tier as numbers
 Check validations for registrations (expired members cannot drop a class)
 Other validations (capacity limit, terminated)
 
+Maybe change the way sessions are handled in database (make them cancellable)
+Take away email from users or members/trainers. Create a record in both at the same time.
 
 
 
 
-curl -i -d '{"username":"Joseph Koop", "email":"jkoop@ub.edu.bz", "password": "password"}' localhost:4000/users/add
+
 
 Mailtrap2026!
 
-curl -w '\nTime: %{time_total}\n' -d '{"username": "James Con", "email": "jcon@example.com", "password": "cinnamonapple"}' localhost:4000/users/add
+curl -i -d '{"username":"Kathy Rivers", "email":"kr@example.com", "password": "password"}' localhost:4000/users/add
+curl -w '\nTime: %{time_total}\n' -d '{"username": "James Con", "email": "jc@example.com", "password": "password"}' localhost:4000/users/add
 
 curl -X PUT -d '{"token": "KXCSRGFLDCLICFSERAMGFU6ISY"}' localhost:4000/users/activated
 
-curl -d '{"email": "jcon@example.com", "password": "cinnamonapple"}' localhost:4000/tokens/authentication
+curl -d '{"email": "jk@example.com", "password": "password"}' localhost:4000/tokens/authentication
 
-curl -i -H "Authorization: Bearer WWQT5PSYADWEXZQOEBRCRCCOLE" localhost:4000/classes
+curl -i -H "Authorization: Bearer VHQHX46ULRRATOZWBCEL3L2DWA" localhost:4000/classes
+
+
+Admin: 
+    all: read + write
+Trainer: (also functions as gym employee / front desk)
+    gyms: read
+    studios: all
+    trainers: read + write(own)
+    classes: read + create + edit(own) + delete(own)
+    session_times: same as classes
+    members: read + write
+    registrations: read + write
+    sessions: read + write(own)
+    attendance: read + write(own)
+    users: read(own) + write(own)
+Member:
+    gyms: read
+    studios: read
+    trainers: read
+    classes: read
+    session_times: read
+    members: read(own)
+    registrations: read(own) + create(own) + edit(own)
+    sessions: read(own)
+    attendance: read(own)
+Guest:
+    gyms: read
+    studios: read
+    trainers: read
+    classes: read
+    session_times: read
+

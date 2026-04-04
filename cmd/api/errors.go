@@ -87,8 +87,28 @@ func (a *applicationDependencies) invalidCredentialsResponse(w http.ResponseWrit
 // to what they need to provide. Don't want to leave them guessing
 func (a *applicationDependencies)invalidAuthenticationTokenResponse(w http.ResponseWriter, r *http.Request)  {
 
-     w.Header().Set("WWW-Authenticate", "Bearer")
+	w.Header().Set("WWW-Authenticate", "Bearer")
 
 	message := "Invalid or missing authentication token."
 	a.errorResponseJSON(w, r, http.StatusUnauthorized, message, nil)
+}
+
+// Note: 401 is Unauthorized (anonymous) and 403 is Forbidden (authenticated 
+// but not activated or don't have the right privilege)
+ 
+func (a *applicationDependencies) authenticationRequiredResponse(w http.ResponseWriter, r *http.Request) {
+    message := "You must be authenticated to access this resource."
+    a.errorResponseJSON(w, r, http.StatusUnauthorized, message, nil)
+}
+
+
+func (a *applicationDependencies) inactiveAccountResponse(w http.ResponseWriter, r *http.Request) {
+    message := "Your user account must be activated to access this resource."
+    a.errorResponseJSON(w, r, http.StatusForbidden, message, nil)
+}
+
+// 403 Forbidden status if bad permission
+func (a *applicationDependencies) notPermittedResponse(w http.ResponseWriter, r *http.Request) {
+    message := "Your user account doesn't have the necessary permissions to access this resource."
+    a.errorResponseJSON(w, r, http.StatusForbidden, message, nil)
 }

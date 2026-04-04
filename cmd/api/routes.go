@@ -15,9 +15,9 @@ func (a *applicationDependencies) routes() http.Handler {
 	router.MethodNotAllowed = http.HandlerFunc(a.methodNotAllowedResponse)
 
 	// setup routes
-	router.HandlerFunc(http.MethodGet, "/classes", a.listClassesHandler)
-	router.HandlerFunc(http.MethodGet, "/classes/:id", a.displayClassHandler)
-	router.HandlerFunc(http.MethodPost, "/classes/add", a.postClassHandler)
+	router.HandlerFunc(http.MethodGet, "/classes", a.requireActivatedUser(a.listClassesHandler))
+	router.HandlerFunc(http.MethodGet, "/classes/:id", a.requirePermission("classes:read", a.displayClassHandler))
+	router.HandlerFunc(http.MethodPost, "/classes/add", a.requirePermission("classes:write", a.postClassHandler))
 	router.HandlerFunc(http.MethodPatch, "/classes/:id/update", a.updateClassHandler)
 	router.HandlerFunc(http.MethodDelete, "/classes/:id/delete", a.deleteClassHandler)
 
@@ -80,7 +80,7 @@ func (a *applicationDependencies) routes() http.Handler {
 
 	router.Handler(http.MethodGet, "/metrics", expvar.Handler())
 
-	// We use PUT instead of POST because PUT is idempotent 
+	// We use PUT instead of POST because PUT is idempotent
 	// and appropriate for this endpoint.  The activation
 	// should only happens once, also we are not creating a resource
 

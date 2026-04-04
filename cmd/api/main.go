@@ -56,6 +56,7 @@ type applicationDependencies struct {
     attendanceModel data.AttendanceModel
     userModel data.UserModel
     tokenModel data.TokenModel
+    permissionModel data.PermissionModel
     mailer mailer.Mailer
     wg  sync.WaitGroup           // need this later for background jobs
 }
@@ -87,7 +88,7 @@ func main() {
     // Use your Password value provided by Mailtrap
     flag.StringVar(&settings.smtp.password, "smtp-password", "daa70c7c1ab841", "SMTP password")
 
-    flag.StringVar(&settings.smtp.sender, "smtp-sender", "Comments Community <no-reply@gymchain.joseph.net>", "SMTP sender")
+    flag.StringVar(&settings.smtp.sender, "smtp-sender", "Iron Fortress Community <no-reply@ironfortress.joseph.net>", "SMTP sender")
 
 
     flag.Parse()
@@ -139,6 +140,7 @@ func main() {
         attendanceModel: data.AttendanceModel {DB: db},
         userModel: data.UserModel {DB: db},
         tokenModel: data.TokenModel {DB: db},
+        permissionModel: data.PermissionModel {DB: db},
 
         mailer: mailer.New(settings.smtp.host, settings.smtp.port,
         settings.smtp.username, settings.smtp.password, settings.smtp.sender),

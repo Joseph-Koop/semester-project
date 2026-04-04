@@ -1,2 +1,4 @@
-DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS users_permissions;
+DROP TABLE IF EXISTS permissions;
 DROP TABLE IF EXISTS tokens;
+DROP TABLE IF EXISTS users;
