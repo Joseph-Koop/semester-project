@@ -12,6 +12,7 @@ import (
 func (a *applicationDependencies) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 // Get the passed in data from the request body and store in a temporary struct
 	var incomingData struct {
+		Role_id int  `json:"role_id"`
 		Username string  `json:"username"`
 		Email  string  `json:"email"`
 		Password  string  `json:"password"`
@@ -25,6 +26,7 @@ func (a *applicationDependencies) registerUserHandler(w http.ResponseWriter, r *
 
 	// we will add the password later after we have hashed it
 	user := &data.User{
+		Role_id: incomingData.Role_id,
 		Username: incomingData.Username,
 		Email: incomingData.Email,
 		Activated: false,

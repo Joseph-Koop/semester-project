@@ -1,8 +1,11 @@
-CREATE TYPE user_role AS ENUM ('member', 'trainer', 'admin');
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL
+);
 
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
-    role user_role NOT NULL,
+    role_id integer NOT NULL REFERENCES roles ON DELETE CASCADE,
     username text NOT NULL,
     email citext UNIQUE NOT NULL,
     password_hash bytea NOT NULL,
@@ -23,9 +26,9 @@ CREATE TABLE IF NOT EXISTS permissions (
     code text NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS users_permissions (
-    user_id bigint NOT NULL REFERENCES users ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS role_permissions (
+    role_id integer NOT NULL REFERENCES roles ON DELETE CASCADE,
     permission_id bigint NOT NULL REFERENCES permissions ON DELETE CASCADE,
-    PRIMARY KEY (user_id, permission_id)
+    PRIMARY KEY (role_id, permission_id)
 );
 

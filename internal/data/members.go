@@ -14,6 +14,7 @@ import (
 
 type Member struct {
 	ID        int     `json:"id"`
+	User_id      int    `json:"user_id"`
 	Name      string    `json:"name"`
 	Address      string    `json:"address"`
 	Phone      int    `json:"phone"`
@@ -25,6 +26,8 @@ type Member struct {
 }
 
 func ValidateMember(v *validator.Validator, member *Member) {
+
+	v.Check(len(strconv.Itoa(member.User_id)) > 0, "user_id", "Must be an existing user.")
 
 	v.Check(member.Name != "", "name", "Must be provided.")
 	v.Check(len(member.Name) <= 50, "name", "Must not be more than 50 bytes long.")
@@ -53,12 +56,12 @@ type MemberModel struct {
 func (c MemberModel) Insert(member *Member) error {
 
 	query := `
-        INSERT INTO members (name, address, phone, email, membership_tier, expiry_date)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO members (user_id, name, address, phone, email, membership_tier, expiry_date)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING id, created_at, version
         `
 
-	args := []any{member.Name, member.Address, member.Phone, member.Email, member.Membership_tier, member.Expiry_date}
+	args := []any{member.User_id, member.Name, member.Address, member.Phone, member.Email, member.Membership_tier, member.Expiry_date}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -84,7 +87,7 @@ func (c MemberModel) Get(id int64) (*Member, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	err := c.DB.QueryRowContext(ctx, query, id).Scan(&member.ID, &member.Name, &member.Address, &member.Phone, &member.Email, &member.Membership_tier, &member.Expiry_date, &member.CreatedAt, &member.Version)
+	err := c.DB.QueryRowContext(ctx, query, id).Scan(&member.ID, &member.User_id, &member.Name, &member.Address, &member.Phone, &member.Email, &member.Membership_tier, &member.Expiry_date, &member.CreatedAt, &member.Version)
 
 	if err != nil {
 		switch {
@@ -100,11 +103,11 @@ func (c MemberModel) Get(id int64) (*Member, error) {
 func (c MemberModel) Update(member *Member) error {
 	query := `
         UPDATE members
-        SET name = $1, address = $2, phone = $3, email = $4, membership_tier = $5, expiry_date = $6, version = version + 1
-        WHERE id = $7
+        SET user_id = $1, name = $2, address = $3, phone = $4, email = $5, membership_tier = $6, expiry_date = $7, version = version + 1
+        WHERE id = $8
         RETURNING version
       `
-	args := []any{member.Name, member.Address, member.Phone, member.Email, member.Membership_tier, member.Expiry_date, member.ID}
+	args := []any{member.User_id, member.Name, member.Address, member.Phone, member.Email, member.Membership_tier, member.Expiry_date, member.ID}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -142,7 +145,7 @@ func (c MemberModel) Delete(id int64) error {
 
 }
 
-func (c MemberModel) GetAll(name *string, address *string, phone *int, email *string, membership_tier *string, expiry_date *time.Time, filters Filters) ([]*Member, Metadata, error) {
+func (c MemberModel) GetAll(user_id *int, name *string, address *string, phone *int, email *string, membership_tier *string, expiry_date *time.Time, filters Filters) ([]*Member, Metadata, error) {
 
 	query := fmt.Sprintf(`
         SELECT  COUNT(*) OVER(), *
@@ -175,7 +178,7 @@ func (c MemberModel) GetAll(name *string, address *string, phone *int, email *st
 
 	for rows.Next() {
 		var member Member
-		err := rows.Scan(&totalRecords, &member.ID, &member.Name, &member.Address, &member.Phone, &member.Email, &member.Membership_tier, &member.Expiry_date, &member.CreatedAt, &member.Version)
+		err := rows.Scan(&totalRecords, &member.ID, &member.User_id, &member.Name, &member.Address, &member.Phone, &member.Email, &member.Membership_tier, &member.Expiry_date, &member.CreatedAt, &member.Version)
 
 		if err != nil {
 			return nil, Metadata{}, err

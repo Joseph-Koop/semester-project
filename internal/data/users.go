@@ -19,6 +19,7 @@ var AnonymousUser = &User{}
 type User struct {
     ID         int64		     `json:"id"`
     CreatedAt  time.Time   `json:"created_at"`
+    Role_id   int      `json:"role_id"`
     Username   string      `json:"username"`
     Email      string      `json:"email"`
     Password   password   `json:"-"`
@@ -70,6 +71,10 @@ func (p *password) Matches(plaintextPassword string) (bool, error) {
 	return true, nil                    // password is correct
 }
 
+func ValidateRoleId(v *validator.Validator, role_id int) {
+    v.Check(role_id > 0, "role_id", "Must be an existing role.")
+}
+
 // Validate the email address
 // We will implement validator.Matches() later
 func ValidateEmail(v *validator.Validator, email string) {
@@ -111,11 +116,11 @@ type UserModel struct {
 // Insert a new user into the database
 func (u UserModel) Insert(user *User) error {
 	query := `
-		INSERT INTO users (username, email, password_hash, activated) 
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO users (role_id, username, email, password_hash, activated) 
+		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, created_at, version
 	`
-	args := []any{user.Username, user.Email, user.Password.hash, user.Activated}
+	args := []any{user.Role_id, user.Username, user.Email, user.Password.hash, user.Activated}
 	
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -136,7 +141,7 @@ func (u UserModel) Insert(user *User) error {
 // Get a user from the database based on their email provided
 func (u UserModel) GetByEmail(email string) (*User, error) {
 	query := `
-		SELECT id, created_at, username, email, password_hash, activated, version
+		SELECT id, created_at, role_id, username, email, password_hash, activated, version
 		FROM users
 		WHERE email = $1
 		`
@@ -147,6 +152,7 @@ func (u UserModel) GetByEmail(email string) (*User, error) {
     err := u.DB.QueryRowContext(ctx, query, email).Scan(
         &user.ID,
         &user.CreatedAt,
+        &user.Role_id,
         &user.Username,
         &user.Email,
         &user.Password.hash,
@@ -173,12 +179,13 @@ func (u UserModel) GetByEmail(email string) (*User, error) {
 func (u UserModel) Update (user *User) error { 
     query := `
         UPDATE users 
-        SET username = $1, email = $2, password_hash = $3,
-            activated = $4, version = version + 1
-        WHERE id = $5 AND version = $6
+        SET role_id = $1, username = $2, email = $3, password_hash = $4,
+            activated = $5, version = version + 1
+        WHERE id = $6 AND version = $7
         RETURNING version
         `
 	args := []any{
+        user.Role_id,
         user.Username,
         user.Email,
         user.Password.hash,

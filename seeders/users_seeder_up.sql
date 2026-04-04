@@ -1,39 +1,86 @@
-INSERT INTO users (role, username, email, password_hash, activated) VALUES
-    ('admin', 'Joseph Koop', 'jk@example.com', '\x24326124313224634d557143562e2f5332384643667547714d614c596535463945685137304e686c42482e6f77727166643633485544663778345869', true),
-    ('trainer', 'Bethany Hill', 'bh@example.com', '\x24326124313224634d557143562e2f5332384643667547714d614c596535463945685137304e686c42482e6f77727166643633485544663778345869', true),
-    ('member', 'Laura Goodwill', 'lg@example.com', '\x24326124313224634d557143562e2f5332384643667547714d614c596535463945685137304e686c42482e6f77727166643633485544663778345869', true),
-    ('member', 'Paul Bunyan', 'pbexample.com', '\x24326124313224634d557143562e2f5332384643667547714d614c596535463945685137304e686c42482e6f77727166643633485544663778345869', false);
+INSERT INTO roles (name) VALUES
+    ('admin'),
+    ('trainer'),
+    ('member');
+
+INSERT INTO users (role_id, username, email, password_hash, activated) VALUES
+    (1, 'Joseph Koop', 'jk@example.com', '\x24326124313224634d557143562e2f5332384643667547714d614c596535463945685137304e686c42482e6f77727166643633485544663778345869', true),
+    (2, 'Michael Grant', 'mg@example.com', '\x24326124313224634d557143562e2f5332384643667547714d614c596535463945685137304e686c42482e6f77727166643633485544663778345869', true),
+    (2, 'Sarah Lopez', 'sl@example.com', '\x24326124313224634d557143562e2f5332384643667547714d614c596535463945685137304e686c42482e6f77727166643633485544663778345869', true),
+    (2, 'Daniel Reed', 'dr@example.com', '\x24326124313224634d557143562e2f5332384643667547714d614c596535463945685137304e686c42482e6f77727166643633485544663778345869', true),
+    (2, 'Emily Cruz', 'ec@example.com', '\x24326124313224634d557143562e2f5332384643667547714d614c596535463945685137304e686c42482e6f77727166643633485544663778345869', true),
+    (3, 'John Carter', 'jc@example.com', '\x24326124313224634d557143562e2f5332384643667547714d614c596535463945685137304e686c42482e6f77727166643633485544663778345869', true),
+    (3, 'Lisa Morgan', 'lm@example.com', '\x24326124313224634d557143562e2f5332384643667547714d614c596535463945685137304e686c42482e6f77727166643633485544663778345869', true),
+    (3, 'Robert King', 'rk@example.com', '\x24326124313224634d557143562e2f5332384643667547714d614c596535463945685137304e686c42482e6f77727166643633485544663778345869', true),
+    (3, 'Natalie Green', 'ng@example.com', '\x24326124313224634d557143562e2f5332384643667547714d614c596535463945685137304e686c42482e6f77727166643633485544663778345869', true),
+    (3, 'Tom Apple', 'ta@example.com', '\x24326124313224634d557143562e2f5332384643667547714d614c596535463945685137304e686c42482e6f77727166643633485544663778345869', false);
 
 INSERT INTO permissions (code) VALUES 
-    ('gyms:read'),
-    ('gyms:write');
-    ('studios:read'),
-    ('studios:write');
-    ('trainers:read'),
-    ('trainers:write');
-    ('classes:read'),
-    ('classes:write');
-    ('session_times:read'),
-    ('session_times:write');
+    -- ('gyms:read'),
+    ('gyms:write'),
+    -- ('studios:read'),
+    ('studios:write'),
+    -- ('trainers:read'),
+    ('trainers:write'),
+    -- ('classes:read'),
+    ('classes:write'),
+    -- ('session_times:read'),
+    ('session_times:write'),
     ('members:read'),
-    ('members:write');
+    ('members:write'),
     ('registrations:read'),
-    ('registrations:write');
+    ('registrations:write'),
     ('sessions:read'),
-    ('sessions:write');
+    ('sessions:write'),
     ('attendance:read'),
-    ('attendance:write');
+    ('attendance:write'),
     ('users:read'),
-    ('users:write');
+    ('users:write'),
     ('tokens:read'),
-    ('tokens:write');
+    ('tokens:write'),
     ('permissions:read'),
-    ('permissions:write');
-    ('users_permissions:read'),
-    ('users_permissions:write');
+    ('permissions:write'),
+    ('role_permissions:read'),
+    ('role_permissions:write');
 
-INSERT INTO users_permissions (user_id, permission_id) VALUES
+INSERT INTO role_permissions (role_id, permission_id) VALUES
     (1, 1),
     (1, 2),
-    (2, 1),
-    (3, 1);
+    (1, 3),
+    (1, 4),
+    (1, 5),
+    (1, 6),
+    (1, 7),
+    (1, 8),
+    (1, 9),
+    (1, 10),
+    (1, 11),
+    (1, 12),
+    (1, 13),
+    (1, 14),
+    (1, 15),
+    (1, 16),
+    (1, 17),
+    (1, 18),
+    (1, 19),
+    (1, 20),
+    (1, 21),
+    (2, 2),
+    (2, 3),
+    (2, 4),
+    (2, 5),
+    (2, 6),
+    (2, 7),
+    (2, 8),
+    (2, 9),
+    (2, 10),
+    (2, 11),
+    (2, 12),
+    (2, 13),
+    (2, 14),
+    (2, 15),
+    (3, 6),
+    (3, 8),
+    (3, 9),
+    (3, 10),
+    (3, 12);

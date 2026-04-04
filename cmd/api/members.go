@@ -13,6 +13,7 @@ import (
 
 func (a *applicationDependencies) postMemberHandler(w http.ResponseWriter, r *http.Request) {
 	var incomingData struct {
+		User_id            int `json:"user_id"`
 		Name             string `json:"name"`
 		Address          string `json:"address"`
 		Phone            int `json:"phone"`
@@ -28,6 +29,7 @@ func (a *applicationDependencies) postMemberHandler(w http.ResponseWriter, r *ht
 	}
 	
 	member := &data.Member{
+		User_id: 		incomingData.User_id,
 		Name: 		incomingData.Name,
 		Address: 	incomingData.Address,
 		Phone: 		incomingData.Phone,
@@ -112,6 +114,7 @@ func (a *applicationDependencies) updateMemberHandler(w http.ResponseWriter, r *
 	}
 	
 	var incomingData struct {
+		User_id      	*int `json:"user_id"`
 		Name      	*string `json:"name"`
 		Address     *string `json:"address"`
 		Phone      	*int `json:"phone"`
@@ -125,6 +128,10 @@ func (a *applicationDependencies) updateMemberHandler(w http.ResponseWriter, r *
 	if err != nil {
 		a.badRequestResponse(w, r, err)
 		return
+	}
+	
+	if incomingData.User_id != nil {
+		member.User_id = *incomingData.User_id
 	}
 	
 	if incomingData.Name != nil {
@@ -207,6 +214,7 @@ func (a *applicationDependencies) deleteMemberHandler(w http.ResponseWriter, r *
 func (a *applicationDependencies) listMembersHandler(w http.ResponseWriter, r *http.Request) {
 	
 	var queryParametersData struct {
+		User_id     	*int
 		Name     	*string
 		Address   	*string
 		Phone     	*int
@@ -219,6 +227,17 @@ func (a *applicationDependencies) listMembersHandler(w http.ResponseWriter, r *h
 	queryParameters := r.URL.Query()
 
 	v := validator.New()
+
+	user_id_string := a.getSingleQueryParameter(queryParameters, "user_id", "")
+	if user_id_string != "" {
+		user_id_int, err := strconv.Atoi(user_id_string)
+
+		if err == nil && user_id_int != 0 {
+			queryParametersData.Phone = &user_id_int
+		} else {
+			v.AddError(user_id_string, "Must be an integer value.")
+		}
+	}
 
 	name_string := a.getSingleQueryParameter(queryParameters, "name", "")
 	if name_string != "" {
@@ -274,7 +293,7 @@ func (a *applicationDependencies) listMembersHandler(w http.ResponseWriter, r *h
 		return
 	}
 
-	members, metadata, err := a.memberModel.GetAll(queryParametersData.Name, queryParametersData.Address, queryParametersData.Phone, queryParametersData.Email, queryParametersData.Membership_tier, queryParametersData.Expiry_date, queryParametersData.Filters)
+	members, metadata, err := a.memberModel.GetAll(queryParametersData.User_id, queryParametersData.Name, queryParametersData.Address, queryParametersData.Phone, queryParametersData.Email, queryParametersData.Membership_tier, queryParametersData.Expiry_date, queryParametersData.Filters)
 	if err != nil {
 		a.serverErrorResponse(w, r, err)
 		return

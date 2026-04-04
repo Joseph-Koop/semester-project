@@ -65,8 +65,8 @@ db/migrations/up:
 	@echo 'Running up migrations...'
 	migrate -path ./migrations -database ${DB_DSN} up
 	@echo 'Running up seeders...'
-	psql ${DB_DSN} -f ./seeders/classes_seeder_up.sql
 	psql ${DB_DSN} -f ./seeders/users_seeder_up.sql
+	psql ${DB_DSN} -f ./seeders/classes_seeder_up.sql
 
 ## db/migrations/down: apply all down database migrations
 .PHONY: db/migrations/down

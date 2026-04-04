@@ -81,10 +81,10 @@ NOTES:
 Rewrite ID validation simpler (like registrations)
 Consider storing membership tier as numbers
 Check validations for registrations (expired members cannot drop a class)
-Other validations (capacity limit, terminated)
 
 Maybe change the way sessions are handled in database (make them cancellable)
-Take away email from users or members/trainers. Create a record in both at the same time.
+Take away email from users or members/trainers. Create a record in both at the same time. (Or make user_id nullable for now)
+Add specific permissions (current-user only)
 
 
 

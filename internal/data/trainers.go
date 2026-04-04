@@ -14,6 +14,7 @@ import (
 
 type Trainer struct {
 	ID        int     `json:"id"`
+	User_id        int     `json:"user_id"`
 	Name      string    `json:"name"`
 	Address      string    `json:"address"`
 	Phone      int    `json:"phone"`
@@ -23,6 +24,8 @@ type Trainer struct {
 }
 
 func ValidateTrainer(v *validator.Validator, trainer *Trainer) {
+
+	v.Check(len(strconv.Itoa(trainer.User_id)) > 0, "user_id", "Must be an existing user.")
 
 	v.Check(trainer.Name != "", "name", "Must be provided.")
 	v.Check(len(trainer.Name) <= 50, "name", "Must not be more than 50 bytes long.")
@@ -45,12 +48,12 @@ type TrainerModel struct {
 func (c TrainerModel) Insert(trainer *Trainer) error {
 
 	query := `
-        INSERT INTO trainers (name, address, phone, email)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO trainers (user_id, name, address, phone, email)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING id, created_at, version
         `
 
-	args := []any{trainer.Name, trainer.Address, trainer.Phone, trainer.Email}
+	args := []any{trainer.User_id, trainer.Name, trainer.Address, trainer.Phone, trainer.Email}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -76,7 +79,7 @@ func (c TrainerModel) Get(id int64) (*Trainer, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	err := c.DB.QueryRowContext(ctx, query, id).Scan(&trainer.ID, &trainer.Name, &trainer.Address, &trainer.Phone, &trainer.Email, &trainer.CreatedAt, &trainer.Version)
+	err := c.DB.QueryRowContext(ctx, query, id).Scan(&trainer.ID, &trainer.User_id, &trainer.Name, &trainer.Address, &trainer.Phone, &trainer.Email, &trainer.CreatedAt, &trainer.Version)
 
 	if err != nil {
 		switch {
@@ -92,11 +95,11 @@ func (c TrainerModel) Get(id int64) (*Trainer, error) {
 func (c TrainerModel) Update(trainer *Trainer) error {
 	query := `
         UPDATE trainers
-        SET name = $1, address = $2, phone = $3, email = $4, version = version + 1
-        WHERE id = $5
+        SET user_id = $1, name = $2, address = $3, phone = $4, email = $5, version = version + 1
+        WHERE id = $6
         RETURNING version
       `
-	args := []any{trainer.Name, trainer.Address, trainer.Phone, trainer.Email, trainer.ID}
+	args := []any{trainer.User_id, trainer.Name, trainer.Address, trainer.Phone, trainer.Email, trainer.ID}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -134,7 +137,7 @@ func (c TrainerModel) Delete(id int64) error {
 
 }
 
-func (c TrainerModel) GetAll(name *string, address *string, phone *int, email *string, filters Filters) ([]*Trainer, Metadata, error) {
+func (c TrainerModel) GetAll(user_id *int, name *string, address *string, phone *int, email *string, filters Filters) ([]*Trainer, Metadata, error) {
 
 	query := fmt.Sprintf(`
         SELECT  COUNT(*) OVER(), *
@@ -165,7 +168,7 @@ func (c TrainerModel) GetAll(name *string, address *string, phone *int, email *s
 
 	for rows.Next() {
 		var trainer Trainer
-		err := rows.Scan(&totalRecords, &trainer.ID, &trainer.Name, &trainer.Address, &trainer.Phone, &trainer.Email, &trainer.CreatedAt, &trainer.Version)
+		err := rows.Scan(&totalRecords, &trainer.ID, &trainer.User_id, &trainer.Name, &trainer.Address, &trainer.Phone, &trainer.Email, &trainer.CreatedAt, &trainer.Version)
 
 		if err != nil {
 			return nil, Metadata{}, err
