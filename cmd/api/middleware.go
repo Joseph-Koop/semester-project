@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"golang.org/x/time/rate"
+	"github.com/julienschmidt/httprouter"
 
     "github.com/Joseph-Koop/json-project/internal/data"
     "github.com/Joseph-Koop/json-project/internal/validator"
@@ -364,14 +365,179 @@ func (a *applicationDependencies) requirePermission(permissionCode string, next 
             a.serverErrorResponse(w, r, err)
             return
         }
+
 		if !permissions.Include(permissionCode) {
 			a.notPermittedResponse(w, r)
 			return
 		}
+
+
 		// they are good. Let's keep going
 		next.ServeHTTP(w, r)
 	}
 
 	return a.requireActivatedUser(fn)
   
+}
+
+func (a *applicationDependencies) adminOnly(next http.HandlerFunc) http.HandlerFunc{
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := a.contextGetUser(r)
+		if(user.Role_id != 1) {
+			a.notPermittedResponse(w, r)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+// func (a *applicationDependencies) customUpdateTrainer(next http.HandlerFunc) http.HandlerFunc {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+// 		user := a.contextGetUser(r)
+
+// 		idParam := httprouter.ParamsFromContext(r.Context()).ByName("id")
+// 		routeID, err := strconv.Atoi(idParam)
+// 		if err != nil {
+// 			a.badRequestResponse(w, r, err)
+// 			return
+// 		}
+// 		routeId := routeID
+
+// 		trainer, err := a.trainerModel.Get(routeId)
+// 		if err != nil {
+// 			a.notFoundResponse(w, r)
+// 			return
+// 		}
+
+// 		if user.Role_id != 1 && trainer.User_id != user.ID {
+// 			a.notPermittedResponse(w, r)
+// 			return
+// 		}
+
+// 		next.ServeHTTP(w, r)
+// 	})
+// }
+
+func (a *applicationDependencies) trainerOwnerOnly(resolveTrainerID func(r *http.Request) (int, error),) func(http.HandlerFunc) http.HandlerFunc {
+
+	return func(next http.HandlerFunc) http.HandlerFunc {
+
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+			user := a.contextGetUser(r)
+
+			// Admin bypass
+			if user.Role_id == 1 {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			trainerID, err := resolveTrainerID(r)
+			if err != nil {
+				a.notPermittedResponse(w, r)
+				return
+			}
+
+			trainer, err := a.trainerModel.GetByUserID(user.ID)
+			if err != nil {
+				a.notPermittedResponse(w, r)
+				return
+			}
+
+			if trainer.ID != trainerID {
+				a.notPermittedResponse(w, r)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func (a *applicationDependencies) trainerResolver(r *http.Request) (int, error) {
+	idParam := httprouter.ParamsFromContext(r.Context()).ByName("id")
+	return strconv.Atoi(idParam)
+}
+
+func (a *applicationDependencies) classResolver(r *http.Request) (int, error) {
+	idParam := httprouter.ParamsFromContext(r.Context()).ByName("id")
+	classID, err := strconv.Atoi(idParam)
+	if err != nil {
+		return 0, err
+	}
+
+	class, err := a.classModel.Get(classID)
+	if err != nil {
+		return 0, err
+	}
+
+	return class.Trainer_id, nil
+}
+
+func (a *applicationDependencies) sessionTimeResolver(r *http.Request) (int, error) {
+	idParam := httprouter.ParamsFromContext(r.Context()).ByName("id")
+	stID, err := strconv.Atoi(idParam)
+	if err != nil {
+		return 0, err
+	}
+
+	st, err := a.sessionTimeModel.Get(stID)
+	if err != nil {
+		return 0, err
+	}
+
+	class, err := a.classModel.Get(st.Class_id)
+	if err != nil {
+		return 0, err
+	}
+
+	// fmt.Println(stID, st.Class_id, class.Trainer_id)
+
+	return class.Trainer_id, nil
+}
+
+func (a *applicationDependencies) sessionResolver(r *http.Request) (int, error) {
+	idParam := httprouter.ParamsFromContext(r.Context()).ByName("id")
+	sessionID, err := strconv.Atoi(idParam)
+	if err != nil {
+		return 0, err
+	}
+
+	session, err := a.sessionModel.Get(sessionID)
+	if err != nil {
+		return 0, err
+	}
+
+	class, err := a.classModel.Get(session.Class_id)
+	if err != nil {
+		return 0, err
+	}
+
+	return class.Trainer_id, nil
+}
+
+func (a *applicationDependencies) attendanceResolver(r *http.Request) (int, error) {
+	idParam := httprouter.ParamsFromContext(r.Context()).ByName("id")
+	attendanceID, err := strconv.Atoi(idParam)
+	if err != nil {
+		return 0, err
+	}
+
+	att, err := a.attendanceModel.Get(attendanceID)
+	if err != nil {
+		return 0, err
+	}
+
+	session, err := a.sessionModel.Get(att.Session_id)
+	if err != nil {
+		return 0, err
+	}
+
+	class, err := a.classModel.Get(session.Class_id)
+	if err != nil {
+		return 0, err
+	}
+
+	return class.Trainer_id, nil
 }

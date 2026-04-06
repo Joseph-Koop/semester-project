@@ -11,10 +11,10 @@ import (
 )
 
 type Registration struct {
-	ID        int     `json:"id"`
-	Class_id      int    `json:"class_id"`
-	Member_id      int    `json:"member_id"`
-	Status      string    `json:"status"`
+	ID        int       `json:"id"`
+	Class_id  int       `json:"class_id"`
+	Member_id int       `json:"member_id"`
+	Status    string    `json:"status"`
 	CreatedAt time.Time `json:"-"`
 	Version   int32     `json:"version"`
 }
@@ -43,7 +43,7 @@ func (c RegistrationModel) ValidateRegistration(v *validator.Validator, registra
 		v.AddError("member_id", "Internal database operation failed.")
 		return
 	}
-	
+
 	var class_membership_tier string
 	var class_capacity_limit int
 	var class_terminated bool
@@ -57,11 +57,11 @@ func (c RegistrationModel) ValidateRegistration(v *validator.Validator, registra
 		v.AddError("class_id", "Class not found.")
 		return
 	}
-	
+
 	hierarchy := map[string]int{
-		"basic": 1,
+		"basic":    1,
 		"standard": 2,
-		"premium": 3,
+		"premium":  3,
 	}
 
 	var current_class_quantity int
@@ -75,8 +75,6 @@ func (c RegistrationModel) ValidateRegistration(v *validator.Validator, registra
 		v.AddError("member_id", "Internal count operation failed.")
 		return
 	}
-
-
 
 	conflictQuery := `
 		SELECT 1
@@ -113,23 +111,19 @@ func (c RegistrationModel) ValidateRegistration(v *validator.Validator, registra
 		return
 	}
 
-
-
-
-
-	if class_terminated == true{
+	if class_terminated == true {
 		v.AddError("class_id", "This class is no longer active.")
 	}
 
-	if(current_class_quantity >= class_capacity_limit){
+	if current_class_quantity >= class_capacity_limit {
 		v.AddError("class_id", "The class capacity is full.")
 	}
 
-	if(hierarchy[member_membership_tier] < hierarchy[class_membership_tier]){
+	if hierarchy[member_membership_tier] < hierarchy[class_membership_tier] {
 		v.AddError("member_id", "Must have a sufficient membership.")
 	}
 
-	if member_expiry_date.Before(time.Now()){
+	if member_expiry_date.Before(time.Now()) {
 		v.AddError("member_id", "Must have an active membership.")
 	}
 }
@@ -151,7 +145,7 @@ func (c RegistrationModel) Insert(registration *Registration) error {
 
 }
 
-func (c RegistrationModel) Get(id int64) (*Registration, error) {
+func (c RegistrationModel) Get(id int) (*Registration, error) {
 
 	if id < 1 {
 		return nil, ErrRecordNotFound
@@ -196,7 +190,7 @@ func (c RegistrationModel) Update(registration *Registration) error {
 
 }
 
-func (c RegistrationModel) Delete(id int64) error {
+func (c RegistrationModel) Delete(id int) error {
 
 	if id < 1 {
 		return ErrRecordNotFound

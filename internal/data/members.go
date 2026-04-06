@@ -13,16 +13,16 @@ import (
 )
 
 type Member struct {
-	ID        int     `json:"id"`
-	User_id      int    `json:"user_id"`
-	Name      string    `json:"name"`
-	Address      string    `json:"address"`
-	Phone      int    `json:"phone"`
-	Email      string    `json:"email"`
-	Membership_tier      string    `json:"membership_tier"`
-	Expiry_date      time.Time    `json:"expiry_date"`
-	CreatedAt time.Time `json:"-"`
-	Version   int32     `json:"version"`
+	ID              int       `json:"id"`
+	User_id         int       `json:"user_id"`
+	Name            string    `json:"name"`
+	Address         string    `json:"address"`
+	Phone           int       `json:"phone"`
+	Email           string    `json:"email"`
+	Membership_tier string    `json:"membership_tier"`
+	Expiry_date     time.Time `json:"expiry_date"`
+	CreatedAt       time.Time `json:"-"`
+	Version         int32     `json:"version"`
 }
 
 func ValidateMember(v *validator.Validator, member *Member) {
@@ -42,7 +42,7 @@ func ValidateMember(v *validator.Validator, member *Member) {
 	_, err := mail.ParseAddress(member.Email)
 	v.Check(err == nil, "email", "Must be a valid email address")
 
-    v.Check(member.Membership_tier == "basic" || member.Membership_tier == "standard" || member.Membership_tier == "premium", "membership_tier", "Must be one of the valid options.")
+	v.Check(member.Membership_tier == "basic" || member.Membership_tier == "standard" || member.Membership_tier == "premium", "membership_tier", "Must be one of the valid options.")
 
 	v.Check(!member.Expiry_date.IsZero(), "expiry_date", "Must be provided.")
 	today := time.Now().Truncate(24 * time.Hour)
@@ -70,7 +70,7 @@ func (c MemberModel) Insert(member *Member) error {
 
 }
 
-func (c MemberModel) Get(id int64) (*Member, error) {
+func (c MemberModel) Get(id int) (*Member, error) {
 
 	if id < 1 {
 		return nil, ErrRecordNotFound
@@ -115,7 +115,7 @@ func (c MemberModel) Update(member *Member) error {
 
 }
 
-func (c MemberModel) Delete(id int64) error {
+func (c MemberModel) Delete(id int) error {
 
 	if id < 1 {
 		return ErrRecordNotFound

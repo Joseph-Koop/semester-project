@@ -12,11 +12,11 @@ import (
 )
 
 type SessionTime struct {
-	ID        int     `json:"id"`
-	Class_id      int    `json:"class_id"`
-	Day      string    `json:"day"`
-	Time      time.Time    `json:"time"`
-	Duration      int    `json:"duration"`
+	ID        int       `json:"id"`
+	Class_id  int       `json:"class_id"`
+	Day       string    `json:"day"`
+	Time      time.Time `json:"time"`
+	Duration  int       `json:"duration"`
 	CreatedAt time.Time `json:"-"`
 	Version   int32     `json:"version"`
 }
@@ -24,14 +24,13 @@ type SessionTime struct {
 func (c SessionTimeModel) ValidateSessionTime(v *validator.Validator, sessionTime *SessionTime) {
 
 	v.Check(len(strconv.Itoa(sessionTime.Class_id)) > 0, "class_id", "Must be an existing class.")
-	
-    v.Check(sessionTime.Day == "sun" || sessionTime.Day == "mon" || sessionTime.Day == "tue" || sessionTime.Day == "wed" || sessionTime.Day == "thu" || sessionTime.Day == "fri" || sessionTime.Day == "sat", "day", "Must be one of the valid options.")
+
+	v.Check(sessionTime.Day == "sun" || sessionTime.Day == "mon" || sessionTime.Day == "tue" || sessionTime.Day == "wed" || sessionTime.Day == "thu" || sessionTime.Day == "fri" || sessionTime.Day == "sat", "day", "Must be one of the valid options.")
 
 	v.Check(!sessionTime.Time.IsZero(), "time", "Must be provided.")
 	v.Check(sessionTime.Time.Second() == 0, "time", "Seconds are not allowed.")
 
 	v.Check(len(strconv.Itoa(sessionTime.Duration)) > 0 && len(strconv.Itoa(sessionTime.Duration)) <= 240, "class_id", "Must be between 1 minute and 4 hours.")
-
 
 	sameTimeQuery := `
         SELECT 1
@@ -48,7 +47,7 @@ func (c SessionTimeModel) ValidateSessionTime(v *validator.Validator, sessionTim
 	ctx1, cancel1 := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel1()
 
-	err := c.DB.QueryRowContext(ctx1, sameTimeQuery, sessionTime.Class_id, sessionTime.Day,sessionTime.Time.Format("15:04:05"), sessionTime.Duration, ).Scan(&exists1)
+	err := c.DB.QueryRowContext(ctx1, sameTimeQuery, sessionTime.Class_id, sessionTime.Day, sessionTime.Time.Format("15:04:05"), sessionTime.Duration).Scan(&exists1)
 
 	if err == nil {
 		v.AddError("time", "Session conflicts with existing session of this class.")
@@ -59,7 +58,6 @@ func (c SessionTimeModel) ValidateSessionTime(v *validator.Validator, sessionTim
 		v.AddError("time", "Internal database operation failed.")
 		return
 	}
-
 
 	trainerConflictQuery := `
 		SELECT 1
@@ -78,7 +76,7 @@ func (c SessionTimeModel) ValidateSessionTime(v *validator.Validator, sessionTim
 	ctx2, cancel2 := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel2()
 
-	err = c.DB.QueryRowContext(ctx2, trainerConflictQuery, sessionTime.Class_id, sessionTime.Day, sessionTime.Time.Format("15:04:05"), sessionTime.Duration, ).Scan(&exists2)
+	err = c.DB.QueryRowContext(ctx2, trainerConflictQuery, sessionTime.Class_id, sessionTime.Day, sessionTime.Time.Format("15:04:05"), sessionTime.Duration).Scan(&exists2)
 
 	if err == nil {
 		v.AddError("time", "Trainer is occupied during this session time.")
@@ -89,7 +87,6 @@ func (c SessionTimeModel) ValidateSessionTime(v *validator.Validator, sessionTim
 		v.AddError("time", "Internal database operation failed.")
 		return
 	}
-
 
 	studioConflictQuery := `
 		SELECT 1
@@ -110,7 +107,7 @@ func (c SessionTimeModel) ValidateSessionTime(v *validator.Validator, sessionTim
 	ctx3, cancel3 := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel3()
 
-	err = c.DB.QueryRowContext(ctx3, studioConflictQuery, sessionTime.Class_id, sessionTime.Day,sessionTime.Time.Format("15:04:05"), sessionTime.Duration, ).Scan(&exists3)
+	err = c.DB.QueryRowContext(ctx3, studioConflictQuery, sessionTime.Class_id, sessionTime.Day, sessionTime.Time.Format("15:04:05"), sessionTime.Duration).Scan(&exists3)
 
 	if err == nil {
 		v.AddError("time", "Studio is occupied during this session time.")
@@ -121,7 +118,6 @@ func (c SessionTimeModel) ValidateSessionTime(v *validator.Validator, sessionTim
 		v.AddError("time", "Internal database operation failed.")
 		return
 	}
-
 
 	var class_terminated bool
 	terminatedQuery := `
@@ -135,7 +131,7 @@ func (c SessionTimeModel) ValidateSessionTime(v *validator.Validator, sessionTim
 		return
 	}
 
-	if class_terminated == true{
+	if class_terminated == true {
 		v.AddError("class_id", "This class is no longer active.")
 	}
 }
@@ -161,7 +157,7 @@ func (c SessionTimeModel) Insert(sessionTime *SessionTime) error {
 
 }
 
-func (c SessionTimeModel) Get(id int64) (*SessionTime, error) {
+func (c SessionTimeModel) Get(id int) (*SessionTime, error) {
 
 	if id < 1 {
 		return nil, ErrRecordNotFound
@@ -206,7 +202,7 @@ func (c SessionTimeModel) Update(sessionTime *SessionTime) error {
 
 }
 
-func (c SessionTimeModel) Delete(id int64) error {
+func (c SessionTimeModel) Delete(id int) error {
 
 	if id < 1 {
 		return ErrRecordNotFound

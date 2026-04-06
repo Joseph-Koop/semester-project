@@ -17,9 +17,9 @@ func (a *applicationDependencies) postClassHandler(w http.ResponseWriter,
 	// create a struct to hold a class
 	// we use struct tags[``] to make the names display in lowercase
 	var incomingData struct {
-		Studio_id       int64  `json:"studio_id"`
-		Trainer_id      int64  `json:"trainer_id"`
-		Capacity_limit  int64  `json:"capacity_limit"`
+		Studio_id       int    `json:"studio_id"`
+		Trainer_id      int    `json:"trainer_id"`
+		Capacity_limit  int    `json:"capacity_limit"`
 		Membership_tier string `json:"membership_tier"`
 		Name            string `json:"name"`
 		Terminated      bool   `json:"terminated"`
@@ -135,9 +135,9 @@ func (a *applicationDependencies) updateClassHandler(w http.ResponseWriter, r *h
 	// between the client leaving a field empty intentionally
 	// and the field not needing to be updated
 	var incomingData struct {
-		Studio_id       *int64  `json:"studio_id"`
-		Trainer_id      *int64  `json:"trainer_id"`
-		Capacity_limit  *int64  `json:"capacity_limit"`
+		Studio_id       *int    `json:"studio_id"`
+		Trainer_id      *int    `json:"trainer_id"`
+		Capacity_limit  *int    `json:"capacity_limit"`
 		Membership_tier *string `json:"membership_tier"`
 		Name            *string `json:"name"`
 		Terminated      *bool   `json:"terminated"`

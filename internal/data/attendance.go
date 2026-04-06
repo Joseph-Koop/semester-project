@@ -11,11 +11,11 @@ import (
 )
 
 type Attendance struct {
-	ID        int     `json:"id"`
-	Registration_id      int    `json:"registration_id"`
-	Session_id      int    `json:"session_id"`
-	CreatedAt time.Time `json:"-"`
-	Version   int32     `json:"version"`
+	ID              int       `json:"id"`
+	Registration_id int       `json:"registration_id"`
+	Session_id      int       `json:"session_id"`
+	CreatedAt       time.Time `json:"-"`
+	Version         int32     `json:"version"`
 }
 
 type AttendanceModel struct {
@@ -47,7 +47,7 @@ func (c AttendanceModel) Insert(attendance *Attendance) error {
 
 }
 
-func (c AttendanceModel) Get(id int64) (*Attendance, error) {
+func (c AttendanceModel) Get(id int) (*Attendance, error) {
 
 	if id < 1 {
 		return nil, ErrRecordNotFound
@@ -92,7 +92,7 @@ func (c AttendanceModel) Update(attendance *Attendance) error {
 
 }
 
-func (c AttendanceModel) Delete(id int64) error {
+func (c AttendanceModel) Delete(id int) error {
 
 	if id < 1 {
 		return ErrRecordNotFound

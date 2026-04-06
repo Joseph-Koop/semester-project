@@ -12,8 +12,8 @@ import (
 )
 
 type Session struct {
-	ID        int     `json:"id"`
-	Class_id      int    `json:"class_id"`
+	ID        int       `json:"id"`
+	Class_id  int       `json:"class_id"`
 	CreatedAt time.Time `json:"-"`
 	Version   int32     `json:"version"`
 }
@@ -44,7 +44,7 @@ func (c SessionModel) Insert(session *Session) error {
 
 }
 
-func (c SessionModel) Get(id int64) (*Session, error) {
+func (c SessionModel) Get(id int) (*Session, error) {
 
 	if id < 1 {
 		return nil, ErrRecordNotFound
@@ -89,7 +89,7 @@ func (c SessionModel) Update(session *Session) error {
 
 }
 
-func (c SessionModel) Delete(id int64) error {
+func (c SessionModel) Delete(id int) error {
 
 	if id < 1 {
 		return ErrRecordNotFound

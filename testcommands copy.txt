@@ -59,21 +59,17 @@ curl -i localhost:4000/classes?page=1\&page_size=2
 curl -i localhost:4000/classes?membership_tier=premium\&studio_id=3
 curl -i "http://localhost:4000/classes?membership_tier=premium&studio_id=3"
 curl -i localhost:4000/classes?sort=-capacity_limit
-curl -i \
-  -H "Authorization: Bearer J46PPR4RVVX6Z3PLD2ULTGPYUE" \
-  -d '{"studio_id":4, "trainer_id":3, "capacity_limit":25, "membership_tier":"standard", "name":"Gymnastics", "terminated":false}' localhost:4000/classes/add
-curl -X PATCH \
-  -H "Authorization: Bearer IJN2H5VUMLQ33QVN6LKJGVKJ7Q" \
-  -d '{"studio_id":3, "trainer_id":3, "capacity_limit":25, "membership_tier":"premium", "name":"Gymnastics", "terminated":true}' localhost:4000/classes/2/update
+curl -i -d '{"studio_id":4, "trainer_id":3, "capacity_limit":25, "membership_tier":"standard", "name":"Gymnastics", "terminated":false}' localhost:4000/classes/add
+curl -X PATCH -d '{"studio_id":3, "trainer_id":3, "capacity_limit":25, "membership_tier":"premium", "name":"Gymnastics", "terminated":true}' localhost:4000/classes/2/update
 curl -X DELETE localhost:4000/classes/3/delete
 
 GYMS:
 curl -i localhost:4000/gyms
 curl -i localhost:4000/gyms/2
-curl -i localhost:4000/gyms/add \
-      -H "Authorization: Bearer 4XYMMXL7KKURVOBV7OQ3V4PV54" \
+curl -i -H "Authorization: Bearer 4XYMMXL7KKURVOBV7OQ3V4PV54" \
      -H "Content-Type: application/json" \
-     -d '{"location": "San Ignacio", "name": "Athletic Training Facility"}'
+     -d '{"location": "San Ignacio", "name": "Athletic Training Facility"}' \
+     localhost:4000/gyms/add
 curl -X PATCH 
     -H "Content-Type: application/json" \
     -d '{"location": "Spanish Lookout"}' localhost:4000/gyms/2/update
@@ -87,33 +83,25 @@ curl -i -X POST localhost:4000/studios/add \
   -d '{"gym_id": 1, "name": "Main Studio", "access": "classes"}'
 curl -i -X PATCH localhost:4000/studios/2/update \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer J46PPR4RVVX6Z3PLD2ULTGPYUE" \
   -d '{"name": "Premium Studio", "access": "general"}'
-curl -i -X DELETE \
-  -H "Authorization: Bearer IJN2H5VUMLQ33QVN6LKJGVKJ7Q" \
-localhost:4000/studios/3/delete
+curl -i -X DELETE localhost:4000/studios/3/delete
 
 TRAINERS:
 curl -i localhost:4000/trainers
 curl -i localhost:4000/trainers/2
 curl -i -X POST localhost:4000/trainers/add \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer IJN2H5VUMLQ33QVN6LKJGVKJ7Q" \
-  -d '{"user_id": 1, "name": "Magnus", "address": "Mountain View Belize", "phone": 5016555555, "email": "mag@gmail.com"}'
+  -d '{"user_id": 1, "name": "Magnus", "address": "Mountain View Belize", "phone": "5016555555", "email": "mag@gmail.com"}'
 curl -i -X PATCH localhost:4000/trainers/5/update \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer IJN2H5VUMLQ33QVN6LKJGVKJ7Q" \
-  -d '{"name": "Magnus Updated", "phone": 5013333333}'
-curl -i -X DELETE \
-  -H "Authorization: Bearer IJN2H5VUMLQ33QVN6LKJGVKJ7Q" \
-  localhost:4000/trainers/5/delete
+  -d '{"name": "Magnus Updated", "phone": "5013333333"}'
+curl -i -X DELETE localhost:4000/trainers/5/delete
 
 SESSIONTIMES:
 curl -i localhost:4000/sessiontimes
 curl -i localhost:4000/sessiontimes/2
 curl -i -X POST localhost:4000/sessiontimes/add \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer J46PPR4RVVX6Z3PLD2ULTGPYUE" \
   -d '{
     "class_id": 1,
     "day": "mon",
@@ -122,8 +110,7 @@ curl -i -X POST localhost:4000/sessiontimes/add \
   }'
 curl -i -X PATCH localhost:4000/sessiontimes/2/update \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer J46PPR4RVVX6Z3PLD2ULTGPYUE" \
-  -d '{"day": "wed", "time": "09:00"}'
+  -d '{"day": "wed", "time": "09:00:00"}'
 curl -i -X DELETE localhost:4000/sessiontimes/3/delete
 
 MEMBERS:
@@ -162,10 +149,9 @@ curl -i localhost:4000/sessions/2
 curl -i -X POST localhost:4000/sessions/add \
   -H "Content-Type: application/json" \
   -d '{"class_id": 1}'
-curl -i -X PATCH localhost:4000/sessions/1/update \
+curl -i -X PATCH localhost:4000/sessions/2/update \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer IJN2H5VUMLQ33QVN6LKJGVKJ7Q" \
-  -d '{"class_id": 1}'
+  -d '{"class_id": 2}'
 curl -i -X DELETE localhost:4000/sessions/3/delete
 
 ATTENDANCE
@@ -174,9 +160,8 @@ curl -i localhost:4000/attendance/2
 curl -i -X POST localhost:4000/attendance/add \
   -H "Content-Type: application/json" \
   -d '{"registration_id": 1, "session_id": 1}'
-curl -i -X PATCH localhost:4000/attendance/1/update \
+curl -i -X PATCH localhost:4000/attendance/2/update \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer J46PPR4RVVX6Z3PLD2ULTGPYUE" \
   -d '{"session_id": 2}'
 curl -i -X DELETE localhost:4000/attendance/3/delete
 
@@ -186,7 +171,7 @@ TRAINER: J46PPR4RVVX6Z3PLD2ULTGPYUE
 MEMBER: DVXYK7TALKPFSHTXAOBG3SVUTY
 NON-ACTIVATED MEMBER: 4XYMMXL7KKURVOBV7OQ3V4PV54
 
-"Authorization: Bearer VHQHX46ULRRATOZWBCEL3L2DWA"
+-H "Authorization: Bearer J46PPR4RVVX6Z3PLD2ULTGPYUE" \
 
 
 
@@ -212,9 +197,6 @@ Maybe change the way sessions are handled in database (make them cancellable)
 Take away email from users or members/trainers. Create a record in both at the same time. (Or make user_id nullable for now)
 Lock one user to one member, trainer, or admin
 Add specific permissions (current-user only)
-Finish user routes
-Auth problems: changing your user_id, viewing other trainers' sessions and attendance, adding or updating a class linking it to a different trainer
-
 
 
 
@@ -238,8 +220,8 @@ Admin:
 Trainer: (also functions as gym employee / front desk)
     gyms: read
     studios: all
-    trainers: read + edit(own)
-    classes: read + create + write(own)
+    trainers: read + write(own)
+    classes: read + write(own)
     session_times: same as classes
     members: read + write
     registrations: read + write

@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-  	"github.com/Joseph-Koop/json-project/internal/validator"
+	"github.com/Joseph-Koop/json-project/internal/validator"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -61,40 +61,40 @@ func (a *applicationDependencies) readJSON(w http.ResponseWriter, r *http.Reques
 		var maxBytesError *http.MaxBytesError
 
 		switch {
-			case errors.As(err, &syntaxError):
-				return fmt.Errorf("The body contains badly-formed JSON (at character %d).", syntaxError.Offset)
-				// Decode can also send back an io error message
-			case errors.Is(err, io.ErrUnexpectedEOF):
-				return errors.New("The body contains badly-formed JSON.")
+		case errors.As(err, &syntaxError):
+			return fmt.Errorf("The body contains badly-formed JSON (at character %d).", syntaxError.Offset)
+			// Decode can also send back an io error message
+		case errors.Is(err, io.ErrUnexpectedEOF):
+			return errors.New("The body contains badly-formed JSON.")
 
-			case errors.As(err, &unmarshalTypeError):
-				if unmarshalTypeError.Field != "" {
-					return fmt.Errorf("The body contains the incorrect JSON type for field %q.",
-						unmarshalTypeError.Field)
-				}
-				return fmt.Errorf("The body contains the incorrect  JSON type (at character %d.)",
-					unmarshalTypeError.Offset)
-			case errors.Is(err, io.EOF):
-				return errors.New("The body must not be empty.")
+		case errors.As(err, &unmarshalTypeError):
+			if unmarshalTypeError.Field != "" {
+				return fmt.Errorf("The body contains the incorrect JSON type for field %q.",
+					unmarshalTypeError.Field)
+			}
+			return fmt.Errorf("The body contains the incorrect  JSON type (at character %d.)",
+				unmarshalTypeError.Offset)
+		case errors.Is(err, io.EOF):
+			return errors.New("The body must not be empty.")
 
-			// check for unknown field error
-			case strings.HasPrefix(err.Error(), "Json: unknown field "):
-				fieldName := strings.TrimPrefix(err.Error(),
-					"Json: unknown field ")
-				return fmt.Errorf("Body contains unknown key %s.", fieldName)
+		// check for unknown field error
+		case strings.HasPrefix(err.Error(), "Json: unknown field "):
+			fieldName := strings.TrimPrefix(err.Error(),
+				"Json: unknown field ")
+			return fmt.Errorf("Body contains unknown key %s.", fieldName)
 
-			// does the body exceed our limit of 250KB?
-			case errors.As(err, &maxBytesError):
-				return fmt.Errorf("The body must not be larger than %d bytes.", maxBytesError.Limit)
-			case errors.Is(err, io.EOF):
-				return errors.New("The body must not be empty.")
+		// does the body exceed our limit of 250KB?
+		case errors.As(err, &maxBytesError):
+			return fmt.Errorf("The body must not be larger than %d bytes.", maxBytesError.Limit)
+		case errors.Is(err, io.EOF):
+			return errors.New("The body must not be empty.")
 
-			// the programmer messed up
-			case errors.As(err, &invalidUnmarshalError):
-				panic(err)
-				// some other type of error
-			default:
-				return err
+		// the programmer messed up
+		case errors.As(err, &invalidUnmarshalError):
+			panic(err)
+			// some other type of error
+		default:
+			return err
 		}
 	}
 	// almost done. Let's lastly check if there is any data after
@@ -110,75 +110,67 @@ func (a *applicationDependencies) readJSON(w http.ResponseWriter, r *http.Reques
 	return nil
 }
 
-func (a *applicationDependencies)readIDParam(r *http.Request) (int64, error) {
+func (a *applicationDependencies) readIDParam(r *http.Request) (int, error) {
 	// Get the URL parameters
-    params := httprouter.ParamsFromContext(r.Context())
+	params := httprouter.ParamsFromContext(r.Context())
 	// Convert the id from string to int
-    id, err := strconv.ParseInt(params.ByName("id"), 10, 64)
-    if err != nil || id < 1 {
-        return 0, errors.New("invalid id parameter")
-    }
+	id, err := strconv.Atoi(params.ByName("id"))
+	if err != nil {
+		return 0, errors.New("Invalid id parameter.")
+	}
 
-    return id, nil
+	return id, nil
 }
 
-func (a *applicationDependencies)getSingleQueryParameter(queryParameters url.Values, key string, defaultValue string) string {
-// url.Values is a key:value hash map of the query parameters
-    result := queryParameters.Get(key)
-    if result == "" {
-        return defaultValue
-    }
-    return result                                                                      
+func (a *applicationDependencies) getSingleQueryParameter(queryParameters url.Values, key string, defaultValue string) string {
+	// url.Values is a key:value hash map of the query parameters
+	result := queryParameters.Get(key)
+	if result == "" {
+		return defaultValue
+	}
+	return result
 }
 
 // call when we have multiple comma-separated values
-func (a *applicationDependencies)getMultipleQueryParameters(queryParameters url.Values, key string, defaultValue []string) []string {
-    result := queryParameters.Get(key)
-    if result == "" {
-        return defaultValue
-    }
-   return strings.Split(result, ",")
+func (a *applicationDependencies) getMultipleQueryParameters(queryParameters url.Values, key string, defaultValue []string) []string {
+	result := queryParameters.Get(key)
+	if result == "" {
+		return defaultValue
+	}
+	return strings.Split(result, ",")
 }
 
 // this method can cause a validation error when trying to convert the
 // string to a valid integer value
-func (a *applicationDependencies)getSingleIntegerParameter(queryParameters url.Values, key string, defaultValue int, v *validator.Validator) int {
-    result := queryParameters.Get(key)
-    if result == "" {
-        return defaultValue
-    }
-   // try to convert to an integer
-   intValue, err := strconv.Atoi(result)
-   if err != nil {
-       v.AddError(key, "Must be an integer value.")
-       return defaultValue
-   }
+func (a *applicationDependencies) getSingleIntegerParameter(queryParameters url.Values, key string, defaultValue int, v *validator.Validator) int {
+	result := queryParameters.Get(key)
+	if result == "" {
+		return defaultValue
+	}
+	// try to convert to an integer
+	intValue, err := strconv.Atoi(result)
+	if err != nil {
+		v.AddError(key, "Must be an integer value.")
+		return defaultValue
+	}
 
-   return intValue
+	return intValue
 }
 
 // Accept a function and run it in the background also recover from any panic
 func (a *applicationDependencies) background(fn func()) {
-    a.wg.Add(1) // Use a wait group to ensure all goroutines finish before we exit
-    go func() {
-        defer a.wg.Done()     // signal goroutine is done
-        defer func() {
-           err := recover() 
-           if err != nil {
-                a.logger.Error(fmt.Sprintf("%v", err))
-            }
-        }()
-       fn()     // Run the actual function
-   }()
+	a.wg.Add(1) // Use a wait group to ensure all goroutines finish before we exit
+	go func() {
+		defer a.wg.Done() // signal goroutine is done
+		defer func() {
+			err := recover()
+			if err != nil {
+				a.logger.Error(fmt.Sprintf("%v", err))
+			}
+		}()
+		fn() // Run the actual function
+	}()
 }
-
-
-
-
-
-
-
-
 
 // func (a *applicationDependencies) viewClassHandler(w http.ResponseWriter,
 // 	r *http.Request) {

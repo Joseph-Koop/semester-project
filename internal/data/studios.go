@@ -12,10 +12,10 @@ import (
 )
 
 type Studio struct {
-	ID        int     `json:"id"`
-	Gym_id      int    `json:"gym_id"`
+	ID        int       `json:"id"`
+	Gym_id    int       `json:"gym_id"`
 	Name      string    `json:"name"`
-	Access      string    `json:"access"`
+	Access    string    `json:"access"`
 	CreatedAt time.Time `json:"-"`
 	Version   int32     `json:"version"`
 }
@@ -51,7 +51,7 @@ func (c StudioModel) Insert(studio *Studio) error {
 
 }
 
-func (c StudioModel) Get(id int64) (*Studio, error) {
+func (c StudioModel) Get(id int) (*Studio, error) {
 
 	if id < 1 {
 		return nil, ErrRecordNotFound
@@ -84,7 +84,7 @@ func (c StudioModel) Get(id int64) (*Studio, error) {
 func (c StudioModel) Update(studio *Studio) error {
 	query := `
         UPDATE studios
-        SET gym_id = $1, name = $1, access = $2, version = version + 1
+        SET gym_id = $1, name = $2, access = $3, version = version + 1
         WHERE id = $4
         RETURNING version
       `
@@ -96,7 +96,7 @@ func (c StudioModel) Update(studio *Studio) error {
 
 }
 
-func (c StudioModel) Delete(id int64) error {
+func (c StudioModel) Delete(id int) error {
 
 	if id < 1 {
 		return ErrRecordNotFound

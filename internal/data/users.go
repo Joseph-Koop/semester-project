@@ -2,48 +2,48 @@ package data
 
 import (
 	"context"
-    "crypto/sha256"
+	"crypto/sha256"
 	"database/sql"
 	"errors"
 	"time"
 
 	"github.com/Joseph-Koop/json-project/internal/validator"
 
-   	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/crypto/bcrypt"
 )
 
-// We create an anonymous user variable of type User. The fields are empty to 
+// We create an anonymous user variable of type User. The fields are empty to
 // denote we don't have any information about the user - hence anonymous.
 var AnonymousUser = &User{}
 
 type User struct {
-    ID         int64		     `json:"id"`
-    CreatedAt  time.Time   `json:"created_at"`
-    Role_id   int      `json:"role_id"`
-    Username   string      `json:"username"`
-    Email      string      `json:"email"`
-    Password   password   `json:"-"`
-    Activated  bool       `json:"activated"`
-    Version     int        `json:"-"`  
+	ID        int       `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	Role_id   int       `json:"role_id"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	Password  password  `json:"-"`
+	Activated bool      `json:"activated"`
+	Version   int       `json:"-"`
 }
 
 // Let's check if the current user is anonymous
 // Note: Go will compare the addresses to determine if they are same,
 // not if they have the same field values
 func (u *User) IsAnonymous() bool {
-    return u == AnonymousUser
+	return u == AnonymousUser
 }
 
-// define the password type (the plaintext + hashed password) 
+// define the password type (the plaintext + hashed password)
 // lowercase because we do not want it to be public
 type password struct {
-    plaintext *string
-    hash      []byte
-}  
+	plaintext *string
+	hash      []byte
+}
 
 // The Set() method computes the hash of the password
 func (p *password) Set(plaintextPassword string) error {
-    hash, err := bcrypt.GenerateFromPassword([]byte(plaintextPassword), 12)
+	hash, err := bcrypt.GenerateFromPassword([]byte(plaintextPassword), 12)
 
 	if err != nil {
 		return err
@@ -51,58 +51,57 @@ func (p *password) Set(plaintextPassword string) error {
 	p.plaintext = &plaintextPassword
 	p.hash = hash
 
-  	return nil
+	return nil
 }
 
 // Compare the client-provided plaintext password with saved-hashed version
 func (p *password) Matches(plaintextPassword string) (bool, error) {
-    err := bcrypt.CompareHashAndPassword(p.hash, []byte(plaintextPassword))
+	err := bcrypt.CompareHashAndPassword(p.hash, []byte(plaintextPassword))
 
-
-    if err != nil {
-        switch {
-            case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
-                return false, nil
-            default:
-                return false, err
-       }
+	if err != nil {
+		switch {
+		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
+			return false, nil
+		default:
+			return false, err
+		}
 	}
 
-	return true, nil                    // password is correct
+	return true, nil // password is correct
 }
 
 func ValidateRoleId(v *validator.Validator, role_id int) {
-    v.Check(role_id > 0, "role_id", "Must be an existing role.")
+	v.Check(role_id > 0, "role_id", "Must be an existing role.")
 }
 
 // Validate the email address
 // We will implement validator.Matches() later
 func ValidateEmail(v *validator.Validator, email string) {
-    v.Check(email != "", "email", "Must be provided.")
-    v.Check(validator.Matches(email, validator.EmailRX), "email", "Must be a valid email address.")
+	v.Check(email != "", "email", "Must be provided.")
+	v.Check(validator.Matches(email, validator.EmailRX), "email", "Must be a valid email address.")
 }
 
 // Check that a valid password is provided
 func ValidatePasswordPlaintext(v *validator.Validator, password string) {
-    v.Check(password != "", "password", "Must be provided.")
-    v.Check(len(password) >= 8, "password", "Must be at least 8 bytes long.")
-    v.Check(len(password) <= 72, "password", "Must not be more than 72 bytes long.")
+	v.Check(password != "", "password", "Must be provided.")
+	v.Check(len(password) >= 8, "password", "Must be at least 8 bytes long.")
+	v.Check(len(password) <= 72, "password", "Must not be more than 72 bytes long.")
 }
 
 // Validate a user
 func ValidateUser(v *validator.Validator, user *User) {
-    v.Check(user.Username != "", "username", "Must be provided.")
-    v.Check(len(user.Username) <= 200, "username", "Must not be more than 2.00 bytes long")
-    // validate email for user
-    ValidateEmail(v, user.Email)
-    // validate the plain text password
-    if user.Password.plaintext != nil {
-        ValidatePasswordPlaintext(v, *user.Password.plaintext)
-    }
-    // check if we messed up in our codebase
-    if user.Password.hash == nil {
-        panic("Missing password hash for user.")
-    }
+	v.Check(user.Username != "", "username", "Must be provided.")
+	v.Check(len(user.Username) <= 200, "username", "Must not be more than 2.00 bytes long")
+	// validate email for user
+	ValidateEmail(v, user.Email)
+	// validate the plain text password
+	if user.Password.plaintext != nil {
+		ValidatePasswordPlaintext(v, *user.Password.plaintext)
+	}
+	// check if we messed up in our codebase
+	if user.Password.hash == nil {
+		panic("Missing password hash for user.")
+	}
 }
 
 // Specify a custom duplicate email error message
@@ -110,7 +109,7 @@ var ErrDuplicateEmail = errors.New("Duplicate email.")
 
 // Setup the struct
 type UserModel struct {
-    DB *sql.DB
+	DB *sql.DB
 }
 
 // Insert a new user into the database
@@ -121,21 +120,21 @@ func (u UserModel) Insert(user *User) error {
 		RETURNING id, created_at, version
 	`
 	args := []any{user.Role_id, user.Username, user.Email, user.Password.hash, user.Activated}
-	
+
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	// if an email address already exists we will get a pq error message
 	err := u.DB.QueryRowContext(ctx, query, args...).Scan(&user.ID, &user.CreatedAt, &user.Version)
 	if err != nil {
 		switch {
-        case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
-            return ErrDuplicateEmail
-        default:
-            return err
-    }
- }
- 
- return nil
+		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
+			return ErrDuplicateEmail
+		default:
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Get a user from the database based on their email provided
@@ -149,35 +148,35 @@ func (u UserModel) GetByEmail(email string) (*User, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-    err := u.DB.QueryRowContext(ctx, query, email).Scan(
-        &user.ID,
-        &user.CreatedAt,
-        &user.Role_id,
-        &user.Username,
-        &user.Email,
-        &user.Password.hash,
-        &user.Activated,
-        &user.Version,
-    )
+	err := u.DB.QueryRowContext(ctx, query, email).Scan(
+		&user.ID,
+		&user.CreatedAt,
+		&user.Role_id,
+		&user.Username,
+		&user.Email,
+		&user.Password.hash,
+		&user.Activated,
+		&user.Version,
+	)
 
 	if err != nil {
-        switch {
-        case errors.Is(err, sql.ErrNoRows):
-            return nil, ErrRecordNotFound
-        default:
-            return nil, err
-        }
-    }
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
 
-    return &user, nil
+	return &user, nil
 }
 
- // Update a User. If the version number is different
- // than what is was before the ran the query, it means
- // someone did a previous edit or is doing an edit, so
- // our query will fail and we would need to try again a bit later 
-func (u UserModel) Update (user *User) error { 
-    query := `
+// Update a User. If the version number is different
+// than what is was before the ran the query, it means
+// someone did a previous edit or is doing an edit, so
+// our query will fail and we would need to try again a bit later
+func (u UserModel) Update(user *User) error {
+	query := `
         UPDATE users 
         SET role_id = $1, username = $2, email = $3, password_hash = $4,
             activated = $5, version = version + 1
@@ -185,40 +184,40 @@ func (u UserModel) Update (user *User) error {
         RETURNING version
         `
 	args := []any{
-        user.Role_id,
-        user.Username,
-        user.Email,
-        user.Password.hash,
-        user.Activated,
-        user.ID,
-        user.Version,
-    }
+		user.Role_id,
+		user.Username,
+		user.Email,
+		user.Password.hash,
+		user.Activated,
+		user.ID,
+		user.Version,
+	}
 
-    ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-    defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
-    err := u.DB.QueryRowContext(ctx, query, args...).Scan(&user.Version)
-    // Check for errors during update 
-    if err != nil {
-        switch {
-            case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
-                return ErrDuplicateEmail
-            case errors.Is(err, sql.ErrNoRows):
-                return ErrEditConflict
-            default:
-                return err
+	err := u.DB.QueryRowContext(ctx, query, args...).Scan(&user.Version)
+	// Check for errors during update
+	if err != nil {
+		switch {
+		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
+			return ErrDuplicateEmail
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
 		}
 	}
 
-    return nil
+	return nil
 }
 
 // Verify token to user. We need to hash the passed in token
 func (u UserModel) GetForToken(tokenScope, tokenPlaintext string) (*User, error) {
-    tokenHash := sha256.Sum256([]byte(tokenPlaintext))
-    // We will do a join- I hope you still remember how to do a join
-    query := `
-        SELECT users.id, users.created_at, users.username, users.email, users.password_hash, users.activated, users.version
+	tokenHash := sha256.Sum256([]byte(tokenPlaintext))
+	// We will do a join- I hope you still remember how to do a join
+	query := `
+        SELECT users.id, users.created_at, users.role_id, users.username, users.email, users.password_hash, users.activated, users.version
         FROM users
         INNER JOIN tokens
         ON users.id = tokens.user_id
@@ -226,28 +225,29 @@ func (u UserModel) GetForToken(tokenScope, tokenPlaintext string) (*User, error)
         AND tokens.scope = $2 
         AND tokens.expiry > $3
     `
-    args := []any{tokenHash[:], tokenScope, time.Now()}
-    var user User
-    ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-    defer cancel()
-    err := u.DB.QueryRowContext(ctx, query, args...).Scan(
-        &user.ID,
-        &user.CreatedAt,
-        &user.Username,
-        &user.Email,
-        &user.Password.hash,
-        &user.Activated,
-        &user.Version,
-    )
-    if err != nil {
-        switch {
-            case errors.Is(err, sql.ErrNoRows):
-                return nil, ErrRecordNotFound
-            default:
-                return nil, err
-        }
-    }
-    
-    // Return the matching user.
-    return &user, nil
+	args := []any{tokenHash[:], tokenScope, time.Now()}
+	var user User
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	err := u.DB.QueryRowContext(ctx, query, args...).Scan(
+		&user.ID,
+		&user.CreatedAt,
+		&user.Role_id,
+		&user.Username,
+		&user.Email,
+		&user.Password.hash,
+		&user.Activated,
+		&user.Version,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	// Return the matching user.
+	return &user, nil
 }

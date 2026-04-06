@@ -13,12 +13,12 @@ import (
 )
 
 type Trainer struct {
-	ID        int     `json:"id"`
-	User_id        int     `json:"user_id"`
+	ID        int       `json:"id"`
+	User_id   int       `json:"user_id"`
 	Name      string    `json:"name"`
-	Address      string    `json:"address"`
-	Phone      int    `json:"phone"`
-	Email      string    `json:"email"`
+	Address   string    `json:"address"`
+	Phone     int       `json:"phone"`
+	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"-"`
 	Version   int32     `json:"version"`
 }
@@ -62,7 +62,7 @@ func (c TrainerModel) Insert(trainer *Trainer) error {
 
 }
 
-func (c TrainerModel) Get(id int64) (*Trainer, error) {
+func (c TrainerModel) Get(id int) (*Trainer, error) {
 
 	if id < 1 {
 		return nil, ErrRecordNotFound
@@ -107,7 +107,7 @@ func (c TrainerModel) Update(trainer *Trainer) error {
 
 }
 
-func (c TrainerModel) Delete(id int64) error {
+func (c TrainerModel) Delete(id int) error {
 
 	if id < 1 {
 		return ErrRecordNotFound
@@ -185,4 +185,34 @@ func (c TrainerModel) GetAll(user_id *int, name *string, address *string, phone 
 	metadata := CalculateMetaData(totalRecords, filters.Page, filters.PageSize)
 
 	return trainers, metadata, nil
+}
+
+func (m *TrainerModel) GetByUserID(userID int) (*Trainer, error) {
+	query := `
+		SELECT id, user_id, name, address, phone, email, created_at, version
+		FROM trainers
+		WHERE user_id = $1
+	`
+
+	var t Trainer
+
+	err := m.DB.QueryRow(query, userID).Scan(
+		&t.ID,
+		&t.User_id,
+		&t.Name,
+		&t.Address,
+		&t.Phone,
+		&t.Email,
+		&t.CreatedAt,
+		&t.Version,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrRecordNotFound
+		}
+		return nil, err
+	}
+
+	return &t, nil
 }

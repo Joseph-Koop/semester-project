@@ -11,7 +11,7 @@ import (
 )
 
 type Gym struct {
-	ID        int64     `json:"id"`
+	ID        int       `json:"id"`
 	Location  string    `json:"location"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"-"`
@@ -48,7 +48,7 @@ func (c GymModel) Insert(gym *Gym) error {
 
 }
 
-func (c GymModel) Get(id int64) (*Gym, error) {
+func (c GymModel) Get(id int) (*Gym, error) {
 
 	if id < 1 {
 		return nil, ErrRecordNotFound
@@ -93,7 +93,7 @@ func (c GymModel) Update(gym *Gym) error {
 
 }
 
-func (c GymModel) Delete(id int64) error {
+func (c GymModel) Delete(id int) error {
 
 	if id < 1 {
 		return ErrRecordNotFound
