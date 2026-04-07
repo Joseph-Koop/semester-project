@@ -196,3 +196,88 @@ func (c MemberModel) GetAll(user_id *int, name *string, address *string, phone *
 
 	return members, metadata, nil
 }
+
+func (t *MemberModel) GetByUserID(userID int) (*Member, error) {
+	query := `
+		SELECT id, user_id, name, address, phone, email, membership_tier, expiry_date, created_at, version
+		FROM members
+		WHERE user_id = $1
+	`
+
+	var m Member
+
+	err := t.DB.QueryRow(query, userID).Scan(
+		&m.ID,
+		&m.User_id,
+		&m.Name,
+		&m.Address,
+		&m.Phone,
+		&m.Email,
+		&m.Membership_tier,
+		&m.Expiry_date,
+		&m.CreatedAt,
+		&m.Version,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrRecordNotFound
+		}
+		return nil, err
+	}
+
+	return &m, nil
+}
+
+func (c MemberModel) GetAllByMemberID(member_id int, user_id *int, name *string, address *string, phone *int, email *string, membership_tier *string, expiry_date *time.Time, filters Filters) ([]*Member, Metadata, error) {
+
+	query := fmt.Sprintf(`
+        SELECT  COUNT(*) OVER(), *
+        FROM members
+        WHERE id = $1
+			AND (to_tsvector('simple', name) @@ 
+                plainto_tsquery('simple', $2) OR $2 IS NULL)
+            AND (to_tsvector('simple', address) @@ 
+                plainto_tsquery('simple', $3) OR $3 IS NULL)
+            AND (phone = $4 OR $4 IS NULL)
+            AND (to_tsvector('simple', email) @@ 
+                plainto_tsquery('simple', $5) OR $5 IS NULL)
+            AND (membership_tier = $6 OR $6 IS NULL)
+            AND ($7::date IS NULL OR expiry_date = $7::date)
+        ORDER BY %s %s, id ASC
+        LIMIT $8 OFFSET $9`, filters.sortColumn(), filters.sortDirection())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := c.DB.QueryContext(ctx, query, member_id, name, address, phone, email, membership_tier, expiry_date, filters.limit(), filters.offset())
+
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+
+	defer rows.Close()
+	totalRecords := 0
+
+	members := []*Member{}
+
+	for rows.Next() {
+		var member Member
+		err := rows.Scan(&totalRecords, &member.ID, &member.User_id, &member.Name, &member.Address, &member.Phone, &member.Email, &member.Membership_tier, &member.Expiry_date, &member.CreatedAt, &member.Version)
+
+		if err != nil {
+			return nil, Metadata{}, err
+		}
+
+		members = append(members, &member)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+
+	metadata := CalculateMetaData(totalRecords, filters.Page, filters.PageSize)
+
+	return members, metadata, nil
+}

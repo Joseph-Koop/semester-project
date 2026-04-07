@@ -157,10 +157,11 @@ curl -i -X PATCH localhost:4000/registrations/2/update \
 curl -i -X DELETE localhost:4000/registrations/3/delete
 
 SESSIONS:
-curl -i localhost:4000/sessions
+curl -i -H "Authorization: Bearer DVXYK7TALKPFSHTXAOBG3SVUTY" localhost:4000/sessions
 curl -i localhost:4000/sessions/2
 curl -i -X POST localhost:4000/sessions/add \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer J46PPR4RVVX6Z3PLD2ULTGPYUE" \
   -d '{"class_id": 1}'
 curl -i -X PATCH localhost:4000/sessions/1/update \
   -H "Content-Type: application/json" \
@@ -173,6 +174,7 @@ curl -i localhost:4000/attendance
 curl -i localhost:4000/attendance/2
 curl -i -X POST localhost:4000/attendance/add \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer J46PPR4RVVX6Z3PLD2ULTGPYUE" \
   -d '{"registration_id": 1, "session_id": 1}'
 curl -i -X PATCH localhost:4000/attendance/1/update \
   -H "Content-Type: application/json" \

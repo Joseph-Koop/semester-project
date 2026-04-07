@@ -166,3 +166,98 @@ func (c AttendanceModel) GetAll(registration_id *int, session_id *int, filters F
 
 	return attendances, metadata, nil
 }
+
+func (c AttendanceModel) GetAllByMemberID(member_id int, registration_id *int, session_id *int, filters Filters) ([]*Attendance, Metadata, error) {
+
+	query := fmt.Sprintf(`
+        SELECT  COUNT(*) OVER(), a.*
+        FROM attendance a
+		INNER JOIN registrations r ON a.registration_id = r.id
+        WHERE r.member_id = $1
+		AND (a.registration_id = $2 OR $2 IS NULL)
+		AND (a.session_id = $3 OR $3 IS NULL)
+        ORDER BY %s %s, a.id ASC
+        LIMIT $4 OFFSET $5`, filters.sortColumn(), filters.sortDirection())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := c.DB.QueryContext(ctx, query, member_id, registration_id, session_id, filters.limit(), filters.offset())
+
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+
+	defer rows.Close()
+	totalRecords := 0
+
+	attendances := []*Attendance{}
+
+	for rows.Next() {
+		var attendance Attendance
+		err := rows.Scan(&totalRecords, &attendance.ID, &attendance.Registration_id, &attendance.Session_id, &attendance.CreatedAt, &attendance.Version)
+
+		if err != nil {
+			return nil, Metadata{}, err
+		}
+
+		attendances = append(attendances, &attendance)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+
+	metadata := CalculateMetaData(totalRecords, filters.Page, filters.PageSize)
+
+	return attendances, metadata, nil
+}
+
+func (c AttendanceModel) GetAllByTrainerID(trainer_id int, registration_id *int, session_id *int, filters Filters) ([]*Attendance, Metadata, error) {
+
+	query := fmt.Sprintf(`
+        SELECT  COUNT(*) OVER(), a.*
+        FROM attendance a
+		INNER JOIN sessions s ON s.id = a.session_id
+		INNER JOIN classes c ON c.id = s.class_id
+		WHERE c.trainer_id = $1
+        AND (a.registration_id = $2 OR $2 IS NULL)
+		AND (a.session_id = $3 OR $3 IS NULL)
+        ORDER BY %s %s, a.id ASC
+        LIMIT $4 OFFSET $5`, filters.sortColumn(), filters.sortDirection())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := c.DB.QueryContext(ctx, query, trainer_id, registration_id, session_id, filters.limit(), filters.offset())
+
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+
+	defer rows.Close()
+	totalRecords := 0
+
+	attendances := []*Attendance{}
+
+	for rows.Next() {
+		var attendance Attendance
+		err := rows.Scan(&totalRecords, &attendance.ID, &attendance.Registration_id, &attendance.Session_id, &attendance.CreatedAt, &attendance.Version)
+
+		if err != nil {
+			return nil, Metadata{}, err
+		}
+
+		attendances = append(attendances, &attendance)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+
+	metadata := CalculateMetaData(totalRecords, filters.Page, filters.PageSize)
+
+	return attendances, metadata, nil
+}

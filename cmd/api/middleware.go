@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"compress/gzip"
+	"encoding/json"
 	"expvar"
 	"errors"
 	"fmt"
@@ -391,34 +393,6 @@ func (a *applicationDependencies) adminOnly(next http.HandlerFunc) http.HandlerF
 	})
 }
 
-// func (a *applicationDependencies) customUpdateTrainer(next http.HandlerFunc) http.HandlerFunc {
-// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-// 		user := a.contextGetUser(r)
-
-// 		idParam := httprouter.ParamsFromContext(r.Context()).ByName("id")
-// 		routeID, err := strconv.Atoi(idParam)
-// 		if err != nil {
-// 			a.badRequestResponse(w, r, err)
-// 			return
-// 		}
-// 		routeId := routeID
-
-// 		trainer, err := a.trainerModel.Get(routeId)
-// 		if err != nil {
-// 			a.notFoundResponse(w, r)
-// 			return
-// 		}
-
-// 		if user.Role_id != 1 && trainer.User_id != user.ID {
-// 			a.notPermittedResponse(w, r)
-// 			return
-// 		}
-
-// 		next.ServeHTTP(w, r)
-// 	})
-// }
-
 func (a *applicationDependencies) trainerOwnerOnly(resolveTrainerID func(r *http.Request) (int, error),) func(http.HandlerFunc) http.HandlerFunc {
 
 	return func(next http.HandlerFunc) http.HandlerFunc {
@@ -540,4 +514,195 @@ func (a *applicationDependencies) attendanceResolver(r *http.Request) (int, erro
 	}
 
 	return class.Trainer_id, nil
+}
+
+func (a *applicationDependencies) postClassResolver(r *http.Request) (int, error) {
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		return 0, err
+	}
+	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	var input struct {
+		TrainerID int `json:"trainer_id"`
+	}
+
+	err = json.Unmarshal(bodyBytes, &input)
+	if err != nil {
+		return 0, err
+	}
+
+	return input.TrainerID, nil
+}
+
+func (a *applicationDependencies) postSessionResolver(r *http.Request) (int, error) {
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		return 0, err
+	}
+	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	var input struct {
+		ClassID int `json:"class_id"`
+	}
+
+	err = json.Unmarshal(bodyBytes, &input)
+	if err != nil {
+		return 0, err
+	}
+
+	class, err := a.classModel.Get(input.ClassID)
+	if err != nil {
+		return 0, err
+	}
+
+	return class.Trainer_id, nil
+}
+
+func (a *applicationDependencies) postSessionTimeResolver(r *http.Request) (int, error) {
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		return 0, err
+	}
+	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	var input struct {
+		ClassID int `json:"class_id"`
+	}
+
+	err = json.Unmarshal(bodyBytes, &input)
+	if err != nil {
+		return 0, err
+	}
+
+	class, err := a.classModel.Get(input.ClassID)
+	if err != nil {
+		return 0, err
+	}
+
+	return class.Trainer_id, nil
+}
+
+func (a *applicationDependencies) postAttendanceResolver(r *http.Request) (int, error) {
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		return 0, err
+	}
+	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	var input struct {
+		SessionID int `json:"session_id"`
+	}
+
+	err = json.Unmarshal(bodyBytes, &input)
+	if err != nil {
+		return 0, err
+	}
+
+	session, err := a.sessionModel.Get(input.SessionID)
+	if err != nil {
+		return 0, err
+	}
+
+	class, err := a.classModel.Get(session.Class_id)
+	if err != nil {
+		return 0, err
+	}
+
+	return class.Trainer_id, nil
+}
+
+func (a *applicationDependencies) customUpdateMemberRegistration(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		user := a.contextGetUser(r)
+
+		if user.Role_id == 1 || user.Role_id == 2{
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		idParam := httprouter.ParamsFromContext(r.Context()).ByName("id")
+		routeID, err := strconv.Atoi(idParam)
+		if err != nil {
+			a.badRequestResponse(w, r, err)
+			return
+		}
+
+		registration, err := a.registrationModel.Get(routeID)
+		if err != nil {
+			a.notFoundResponse(w, r)
+			return
+		}
+
+		member, err := a.memberModel.Get(registration.Member_id)
+		if err != nil {
+			a.notFoundResponse(w, r)
+			return
+		}
+
+		if member.User_id != user.ID {
+			a.notPermittedResponse(w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (a *applicationDependencies) customPostMemberRegistration(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		user := a.contextGetUser(r)
+
+		if user.Role_id == 1 || user.Role_id == 2{
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		bodyBytes, err := io.ReadAll(r.Body)
+		if err != nil {
+			a.badRequestResponse(w, r, err)
+			return
+		}
+		r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+		var input struct {
+			MemberID int `json:"member_id"`
+		}
+
+		err = json.Unmarshal(bodyBytes, &input)
+		if err != nil {
+			a.badRequestResponse(w, r, err)
+			return
+		}
+
+		member, err := a.memberModel.Get(input.MemberID)
+		if err != nil {
+			a.notFoundResponse(w, r)
+			return
+		}
+
+		if member.User_id != user.ID {
+			a.notPermittedResponse(w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (a *applicationDependencies) customDeleteMemberRegistration(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		user := a.contextGetUser(r)
+
+		if user.Role_id == 1 || user.Role_id == 2{
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		a.notPermittedResponse(w, r)
+		return
+	})
 }

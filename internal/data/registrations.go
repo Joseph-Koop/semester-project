@@ -265,3 +265,50 @@ func (c RegistrationModel) GetAll(class_id *int, member_id *int, status *string,
 
 	return registrations, metadata, nil
 }
+
+func (c RegistrationModel) GetAllByMemberID(user_member_id int, class_id *int, member_id *int, status *string, filters Filters) ([]*Registration, Metadata, error) {
+
+	query := fmt.Sprintf(`
+        SELECT  COUNT(*) OVER(), *
+        FROM registrations
+        WHERE registrations.member_id = $1
+		AND (class_id = $2 OR $2 IS NULL)
+		AND (member_id = $3 OR $3 IS NULL)
+		AND (status = $4 OR $4 IS NULL)
+        ORDER BY %s %s, id ASC
+        LIMIT $5 OFFSET $6`, filters.sortColumn(), filters.sortDirection())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := c.DB.QueryContext(ctx, query, user_member_id, class_id, member_id, status, filters.limit(), filters.offset())
+
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+
+	defer rows.Close()
+	totalRecords := 0
+
+	registrations := []*Registration{}
+
+	for rows.Next() {
+		var registration Registration
+		err := rows.Scan(&totalRecords, &registration.ID, &registration.Class_id, &registration.Member_id, &registration.Status, &registration.CreatedAt, &registration.Version)
+
+		if err != nil {
+			return nil, Metadata{}, err
+		}
+
+		registrations = append(registrations, &registration)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+
+	metadata := CalculateMetaData(totalRecords, filters.Page, filters.PageSize)
+
+	return registrations, metadata, nil
+}

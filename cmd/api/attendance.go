@@ -222,7 +222,39 @@ func (a *applicationDependencies) listAttendancesHandler(w http.ResponseWriter, 
 		return
 	}
 
-	attendances, metadata, err := a.attendanceModel.GetAll(queryParametersData.Registration_id, queryParametersData.Session_id, queryParametersData.Filters)
+	user := a.contextGetUser(r)
+
+	var attendances []*data.Attendance
+	var err error
+	var metadata any
+
+	switch user.Role_id{
+		case 1:
+			attendances, metadata, err = a.attendanceModel.GetAll(queryParametersData.Registration_id, queryParametersData.Session_id, queryParametersData.Filters)
+
+
+		case 2:
+			trainer, err2 := a.trainerModel.GetByUserID(user.ID)
+			if err2 != nil {
+				a.serverErrorResponse(w, r, err2)
+				return
+			}
+
+			attendances, metadata, err = a.attendanceModel.GetAllByTrainerID(trainer.ID, queryParametersData.Registration_id, queryParametersData.Session_id, queryParametersData.Filters)
+
+		case 3:
+			member, err2 := a.memberModel.GetByUserID(user.ID)
+			if err2 != nil {
+				a.serverErrorResponse(w, r, err2)
+				return
+			}
+
+			attendances, metadata, err = a.attendanceModel.GetAllByMemberID(member.ID, queryParametersData.Registration_id, queryParametersData.Session_id, queryParametersData.Filters)
+		default:
+			a.notPermittedResponse(w, r)
+			return
+	}
+
 	if err != nil {
 		a.serverErrorResponse(w, r, err)
 		return

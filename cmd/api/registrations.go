@@ -235,7 +235,33 @@ func (a *applicationDependencies) listRegistrationsHandler(w http.ResponseWriter
 		return
 	}
 
-	registrations, metadata, err := a.registrationModel.GetAll(queryParametersData.Class_id, queryParametersData.Member_id, queryParametersData.Status, queryParametersData.Filters)
+	user := a.contextGetUser(r)
+
+	var registrations []*data.Registration
+	var err error
+	var metadata any
+
+	switch user.Role_id{
+		case 1:
+			registrations, metadata, err = a.registrationModel.GetAll(queryParametersData.Class_id, queryParametersData.Member_id, queryParametersData.Status, queryParametersData.Filters)
+
+
+		case 2:
+			registrations, metadata, err = a.registrationModel.GetAll(queryParametersData.Class_id, queryParametersData.Member_id, queryParametersData.Status, queryParametersData.Filters)
+
+		case 3:
+			member, err2 := a.memberModel.GetByUserID(user.ID)
+			if err2 != nil {
+				a.serverErrorResponse(w, r, err2)
+				return
+			}
+
+			registrations, metadata, err = a.registrationModel.GetAllByMemberID(member.ID, queryParametersData.Class_id, queryParametersData.Member_id, queryParametersData.Status, queryParametersData.Filters)
+		default:
+			a.notPermittedResponse(w, r)
+			return
+	}
+
 	if err != nil {
 		a.serverErrorResponse(w, r, err)
 		return

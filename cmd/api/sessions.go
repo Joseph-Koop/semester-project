@@ -203,7 +203,42 @@ func (a *applicationDependencies) listSessionsHandler(w http.ResponseWriter, r *
 		return
 	}
 
-	sessions, metadata, err := a.sessionModel.GetAll(queryParametersData.Class_id, queryParametersData.Filters)
+	user := a.contextGetUser(r)
+
+	var sessions []*data.Session
+	var err error
+	var metadata any
+
+	switch user.Role_id{
+		case 1:
+			// Admin → all sessions
+			sessions, metadata, err = a.sessionModel.GetAll(queryParametersData.Class_id, queryParametersData.Filters)
+
+
+		case 2:
+			// Trainer → sessions of their classes
+			trainer, err2 := a.trainerModel.GetByUserID(user.ID)
+			if err2 != nil {
+				a.serverErrorResponse(w, r, err2)
+				return
+			}
+
+			sessions, metadata, err = a.sessionModel.GetAllByTrainerID(trainer.ID, queryParametersData.Class_id, queryParametersData.Filters)
+
+		case 3:
+			// Member → sessions they are registered/attending
+			member, err2 := a.memberModel.GetByUserID(user.ID)
+			if err2 != nil {
+				a.serverErrorResponse(w, r, err2)
+				return
+			}
+
+			sessions, metadata, err = a.sessionModel.GetAllByMemberID(member.ID, queryParametersData.Class_id, queryParametersData.Filters)
+		default:
+			a.notPermittedResponse(w, r)
+			return
+	}
+
 	if err != nil {
 		a.serverErrorResponse(w, r, err)
 		return

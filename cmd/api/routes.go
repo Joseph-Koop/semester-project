@@ -17,7 +17,7 @@ func (a *applicationDependencies) routes() http.Handler {
 	// setup routes
 	router.HandlerFunc(http.MethodGet, "/classes", a.listClassesHandler)
 	router.HandlerFunc(http.MethodGet, "/classes/:id", a.displayClassHandler)
-	router.HandlerFunc(http.MethodPost, "/classes/add", a.requirePermission("classes:write", a.postClassHandler))
+	router.HandlerFunc(http.MethodPost, "/classes/add", a.requirePermission("classes:write", a.trainerOwnerOnly(a.postClassResolver)(a.postClassHandler)))
 	router.HandlerFunc(http.MethodPatch, "/classes/:id/update", a.requirePermission("classes:write", a.trainerOwnerOnly(a.classResolver)(a.updateClassHandler)))
 	router.HandlerFunc(http.MethodDelete, "/classes/:id/delete", a.requirePermission("classes:write", a.trainerOwnerOnly(a.classResolver)(a.deleteClassHandler)))
 
@@ -47,25 +47,25 @@ router.HandlerFunc(http.MethodGet, "/gyms", a.listGymsHandler)
 
 	router.HandlerFunc(http.MethodGet, "/sessiontimes", a.listSessionTimesHandler)
 	router.HandlerFunc(http.MethodGet, "/sessiontimes/:id", a.displaySessionTimeHandler)
-	router.HandlerFunc(http.MethodPost, "/sessiontimes/add", a.requirePermission("session_times:write", a.postSessionTimeHandler))
+	router.HandlerFunc(http.MethodPost, "/sessiontimes/add", a.requirePermission("session_times:write", a.trainerOwnerOnly(a.postSessionTimeResolver)(a.postSessionTimeHandler)))
 	router.HandlerFunc(http.MethodPatch, "/sessiontimes/:id/update", a.requirePermission("session_times:write", a.trainerOwnerOnly(a.sessionTimeResolver)(a.updateSessionTimeHandler)))
 	router.HandlerFunc(http.MethodDelete, "/sessiontimes/:id/delete", a.requirePermission("session_times:write", a.trainerOwnerOnly(a.sessionTimeResolver)(a.deleteSessionTimeHandler)))
 
 	router.HandlerFunc(http.MethodGet, "/sessions", a.requirePermission("sessions:read", a.listSessionsHandler))
-	router.HandlerFunc(http.MethodGet, "/sessions/:id", a.requirePermission("sessions:read", a.trainerOwnerOnly(a.sessionResolver)( a.displaySessionHandler)))
-	router.HandlerFunc(http.MethodPost, "/sessions/add", a.requirePermission("sessions:write", a.postSessionHandler))
+	router.HandlerFunc(http.MethodGet, "/sessions/:id", a.requirePermission("sessions:read", a.trainerOwnerOnly(a.sessionResolver)(a.displaySessionHandler)))
+	router.HandlerFunc(http.MethodPost, "/sessions/add", a.requirePermission("sessions:write", a.trainerOwnerOnly(a.postSessionResolver)(a.postSessionHandler)))
 	router.HandlerFunc(http.MethodPatch, "/sessions/:id/update", a.requirePermission("sessions:write", a.trainerOwnerOnly(a.sessionResolver)(a.updateSessionHandler)))
 	router.HandlerFunc(http.MethodDelete, "/sessions/:id/delete", a.requirePermission("sessions:write", a.trainerOwnerOnly(a.sessionResolver)(a.deleteSessionHandler)))
 
 	router.HandlerFunc(http.MethodGet, "/registrations", a.requirePermission("registrations:read", a.listRegistrationsHandler))
 	router.HandlerFunc(http.MethodGet, "/registrations/:id", a.requirePermission("registrations:read", a.displayRegistrationHandler))
-	router.HandlerFunc(http.MethodPost, "/registrations/add", a.requirePermission("registrations:write", a.postRegistrationHandler))
-	router.HandlerFunc(http.MethodPatch, "/registrations/:id/update", a.requirePermission("registrations:write", a.updateRegistrationHandler))
-	router.HandlerFunc(http.MethodDelete, "/registrations/:id/delete", a.requirePermission("registrations:write", a.deleteRegistrationHandler))
+	router.HandlerFunc(http.MethodPost, "/registrations/add", a.requirePermission("registrations:write", a.customPostMemberRegistration(a.postRegistrationHandler)))
+	router.HandlerFunc(http.MethodPatch, "/registrations/:id/update", a.requirePermission("registrations:write", a.customUpdateMemberRegistration(a.updateRegistrationHandler)))
+	router.HandlerFunc(http.MethodDelete, "/registrations/:id/delete", a.requirePermission("registrations:write", a.customDeleteMemberRegistration(a.deleteRegistrationHandler)))
 
 	router.HandlerFunc(http.MethodGet, "/attendance", a.requirePermission("attendance:read", a.listAttendancesHandler))
 	router.HandlerFunc(http.MethodGet, "/attendance/:id", a.requirePermission("attendance:read", a.trainerOwnerOnly(a.attendanceResolver)(a.displayAttendanceHandler)))
-	router.HandlerFunc(http.MethodPost, "/attendance/add", a.requirePermission("attendance:write", a.postAttendanceHandler))
+	router.HandlerFunc(http.MethodPost, "/attendance/add", a.requirePermission("attendance:write", a.trainerOwnerOnly(a.postAttendanceResolver)(a.postAttendanceHandler)))
 	router.HandlerFunc(http.MethodPatch, "/attendance/:id/update", a.requirePermission("attendance:write", a.trainerOwnerOnly(a.attendanceResolver)(a.updateAttendanceHandler)))
 	router.HandlerFunc(http.MethodDelete, "/attendance/:id/delete", a.requirePermission("attendance:write", a.trainerOwnerOnly(a.attendanceResolver)(a.deleteAttendanceHandler)))
 

@@ -122,7 +122,7 @@ func (c SessionModel) Delete(id int) error {
 func (c SessionModel) GetAll(class_id *int, filters Filters) ([]*Session, Metadata, error) {
 
 	query := fmt.Sprintf(`
-        SELECT  COUNT(*) OVER(), *
+        SELECT COUNT(*) OVER(), *
         FROM sessions
         WHERE (class_id = $1 OR $1 IS NULL)
         ORDER BY %s %s, id ASC
@@ -162,3 +162,97 @@ func (c SessionModel) GetAll(class_id *int, filters Filters) ([]*Session, Metada
 
 	return sessions, metadata, nil
 }
+
+func (c SessionModel) GetAllByMemberID(member_id int, class_id *int, filters Filters) ([]*Session, Metadata, error) {
+
+	query := fmt.Sprintf(`
+        SELECT COUNT(*) OVER(), s.*
+        FROM sessions s
+		JOIN attendance a ON a.session_id = s.id
+		JOIN registrations r ON a.registration_id = r.id
+		WHERE r.member_id = $1
+        AND (r.class_id = $2 OR $2 IS NULL)
+        ORDER BY %s %s, s.id ASC
+        LIMIT $3 OFFSET $4`, filters.sortColumn(), filters.sortDirection())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := c.DB.QueryContext(ctx, query, member_id, class_id, filters.limit(), filters.offset())
+
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+
+	defer rows.Close()
+	totalRecords := 0
+
+	sessions := []*Session{}
+
+	for rows.Next() {
+		var session Session
+		err := rows.Scan(&totalRecords, &session.ID, &session.Class_id, &session.CreatedAt, &session.Version)
+
+		if err != nil {
+			return nil, Metadata{}, err
+		}
+
+		sessions = append(sessions, &session)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+
+	metadata := CalculateMetaData(totalRecords, filters.Page, filters.PageSize)
+
+	return sessions, metadata, nil
+}
+
+func (c SessionModel) GetAllByTrainerID(trainer_id int, class_id *int, filters Filters) ([]*Session, Metadata, error) {
+
+	query := fmt.Sprintf(`
+        SELECT COUNT(*) OVER(), s.*
+        FROM sessions s
+		JOIN classes c ON s.class_id = c.id
+		WHERE c.trainer_id = $1
+        AND (s.class_id = $2 OR $2 IS NULL)
+        ORDER BY %s %s, s.id ASC
+        LIMIT $3 OFFSET $4`, filters.sortColumn(), filters.sortDirection())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := c.DB.QueryContext(ctx, query, trainer_id, class_id, filters.limit(), filters.offset())
+
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+
+	defer rows.Close()
+	totalRecords := 0
+
+	sessions := []*Session{}
+
+	for rows.Next() {
+		var session Session
+		err := rows.Scan(&totalRecords, &session.ID, &session.Class_id, &session.CreatedAt, &session.Version)
+
+		if err != nil {
+			return nil, Metadata{}, err
+		}
+
+		sessions = append(sessions, &session)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+
+	metadata := CalculateMetaData(totalRecords, filters.Page, filters.PageSize)
+
+	return sessions, metadata, nil
+}
+

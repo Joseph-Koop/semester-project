@@ -293,7 +293,33 @@ func (a *applicationDependencies) listMembersHandler(w http.ResponseWriter, r *h
 		return
 	}
 
-	members, metadata, err := a.memberModel.GetAll(queryParametersData.User_id, queryParametersData.Name, queryParametersData.Address, queryParametersData.Phone, queryParametersData.Email, queryParametersData.Membership_tier, queryParametersData.Expiry_date, queryParametersData.Filters)
+	user := a.contextGetUser(r)
+
+	var members []*data.Member
+	var err error
+	var metadata any
+
+	switch user.Role_id{
+		case 1:
+			members, metadata, err = a.memberModel.GetAll(queryParametersData.User_id, queryParametersData.Name, queryParametersData.Address, queryParametersData.Phone, queryParametersData.Email, queryParametersData.Membership_tier, queryParametersData.Expiry_date, queryParametersData.Filters)
+
+
+		case 2:
+			members, metadata, err = a.memberModel.GetAll(queryParametersData.User_id, queryParametersData.Name, queryParametersData.Address, queryParametersData.Phone, queryParametersData.Email, queryParametersData.Membership_tier, queryParametersData.Expiry_date, queryParametersData.Filters)
+
+		case 3:
+			member, err2 := a.memberModel.GetByUserID(user.ID)
+			if err2 != nil {
+				a.serverErrorResponse(w, r, err2)
+				return
+			}
+
+			members, metadata, err = a.memberModel.GetAllByMemberID(member.ID, queryParametersData.User_id, queryParametersData.Name, queryParametersData.Address, queryParametersData.Phone, queryParametersData.Email, queryParametersData.Membership_tier, queryParametersData.Expiry_date, queryParametersData.Filters)
+		default:
+			a.notPermittedResponse(w, r)
+			return
+	}
+	
 	if err != nil {
 		a.serverErrorResponse(w, r, err)
 		return
