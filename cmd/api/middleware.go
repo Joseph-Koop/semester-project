@@ -612,6 +612,76 @@ func (a *applicationDependencies) postAttendanceResolver(r *http.Request) (int, 
 	return class.Trainer_id, nil
 }
 
+func (a *applicationDependencies) customViewMember(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		user := a.contextGetUser(r)
+
+		if user.Role_id == 1 || user.Role_id == 2{
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		idParam := httprouter.ParamsFromContext(r.Context()).ByName("id")
+		routeID, err := strconv.Atoi(idParam)
+		if err != nil {
+			a.badRequestResponse(w, r, err)
+			return
+		}
+
+		member, err := a.memberModel.Get(routeID)
+		if err != nil {
+			a.notFoundResponse(w, r)
+			return
+		}
+
+		if member.User_id != user.ID {
+			a.notPermittedResponse(w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (a *applicationDependencies) customViewRegistration(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		user := a.contextGetUser(r)
+
+		if user.Role_id == 1 || user.Role_id == 2{
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		idParam := httprouter.ParamsFromContext(r.Context()).ByName("id")
+		routeID, err := strconv.Atoi(idParam)
+		if err != nil {
+			a.badRequestResponse(w, r, err)
+			return
+		}
+
+		registration, err := a.registrationModel.Get(routeID)
+		if err != nil {
+			a.notFoundResponse(w, r)
+			return
+		}
+
+		member, err := a.memberModel.Get(registration.Member_id)
+		if err != nil {
+			a.notFoundResponse(w, r)
+			return
+		}
+
+		if member.User_id != user.ID {
+			a.notPermittedResponse(w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (a *applicationDependencies) customUpdateMemberRegistration(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 

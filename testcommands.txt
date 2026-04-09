@@ -127,8 +127,12 @@ curl -i -X PATCH localhost:4000/sessiontimes/2/update \
 curl -i -X DELETE localhost:4000/sessiontimes/3/delete
 
 MEMBERS:
-curl -i localhost:4000/members
-curl -i localhost:4000/members/2
+curl -i \
+-H "Authorization: Bearer 6P4CHADKTZS3QNH7YIMPCXC7T4" \
+localhost:4000/members
+curl -i \
+-H "Authorization: Bearer 6P4CHADKTZS3QNH7YIMPCXC7T4" \
+ localhost:4000/members/2
 curl -i -X POST localhost:4000/members/add \
   -H "Content-Type: application/json" \
   -d '{
@@ -157,7 +161,7 @@ curl -i -X PATCH localhost:4000/registrations/2/update \
 curl -i -X DELETE localhost:4000/registrations/3/delete
 
 SESSIONS:
-curl -i -H "Authorization: Bearer DVXYK7TALKPFSHTXAOBG3SVUTY" localhost:4000/sessions
+curl -i -H "Authorization: Bearer IJN2H5VUMLQ33QVN6LKJGVKJ7Q" localhost:4000/sessions
 curl -i localhost:4000/sessions/2
 curl -i -X POST localhost:4000/sessions/add \
   -H "Content-Type: application/json" \
@@ -170,7 +174,9 @@ curl -i -X PATCH localhost:4000/sessions/1/update \
 curl -i -X DELETE localhost:4000/sessions/3/delete
 
 ATTENDANCE
-curl -i localhost:4000/attendance
+curl -i \
+  -H "Authorization: Bearer BITZD5P3VDDIR5FUVEWUAOOXGI" \
+  localhost:4000/attendance
 curl -i localhost:4000/attendance/2
 curl -i -X POST localhost:4000/attendance/add \
   -H "Content-Type: application/json" \
@@ -183,12 +189,12 @@ curl -i -X PATCH localhost:4000/attendance/1/update \
 curl -i -X DELETE localhost:4000/attendance/3/delete
 
 
-ADMIN: IJN2H5VUMLQ33QVN6LKJGVKJ7Q
-TRAINER: J46PPR4RVVX6Z3PLD2ULTGPYUE
-MEMBER: DVXYK7TALKPFSHTXAOBG3SVUTY
-NON-ACTIVATED MEMBER: 4XYMMXL7KKURVOBV7OQ3V4PV54
+ADMIN: BITZD5P3VDDIR5FUVEWUAOOXGI
+TRAINER: 7HUU66ZFHDRENLR4MNY6CGU7G4
+MEMBER: 6P4CHADKTZS3QNH7YIMPCXC7T4
+NON-ACTIVATED MEMBER: 7HUU66ZFHDRENLR4MNY6CGU7G4
 
-"Authorization: Bearer VHQHX46ULRRATOZWBCEL3L2DWA"
+"Authorization: Bearer 6P4CHADKTZS3QNH7YIMPCXC7T4"
 
 
 
