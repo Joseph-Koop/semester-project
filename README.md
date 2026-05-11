@@ -15,5 +15,5 @@ Lab #4  | Feb 24 | CRUD
 Lab #5  | Mar 3  | Pagination, sorting, and filtering  
 Lab #6  | Mar 10 | Rate limiting and graceful shutdown  
 Test #1 | Mar 19 | Advanced middleware and extended API  
-Lab #7  | Apr 7  | Authentication, authorization, and mailing 
+Lab #7  | Apr 7  | Authentication, authorization, and mailing  
 Final   | May 7  | UI pagination feature
