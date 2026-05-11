@@ -1,27 +1,29 @@
 // data-service.js
 import { emitter } from './event-emitter.js'
-const API_BASE = 'http://localhost:4000/';
+const API_BASE = 'http://localhost:4000';
 
 // Common Pattern: do not export each function; instead put them in
 // an object and export only the object
 export const DataService = {
-    async fetchClasses() {
+    async fetchClasses(page) {
         // 1. announce that loading has started
+        if(page == null) page = 1;
         emitter.emit('classes:loading');
         try {
-            const res  = await fetch(`${API_BASE}/classes`);
+            const res  = await fetch(`${API_BASE}/classes?page=${page}`);
             if(!res.ok) {
                 throw new Error(`Server error: ${res.status}`);
             }
             const classes = await res.json();
             // 2. announce success — pass the data to all listeners
             // console.log(classes);
-            emitter.emit('classes:loaded', classes.classes);
+            emitter.emit('classes:loaded', classes);
         } catch(err) {
         // 3. announce failure — pass the error message
             emitter.emit('classes:error', err.message);
         }
     }
+
     // async createUser(payload) {
     //     emitter.emit('classes:loading');
     //     try {

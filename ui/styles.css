@@ -1,0 +1,148 @@
+:root{
+    --dark1: #191919;
+    --dark2: #757575;
+    --accent: #F15025;
+    --light1: #FFFFFF;
+    --light2: #E6E8E6;
+    --light3: #CED0CE;
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+nav{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--dark1);
+    padding: 10px;
+    color: var(--light1);
+    height: 50px;
+}
+
+nav div{
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.red-button{
+    padding: 5px;
+    background-color: var(--accent);
+    border-radius: 10px;
+    border: 0;
+}
+
+.gray-button{
+    padding: 5px;
+    background-color: var(--dark2);
+    border-radius: 10px;
+    border: 0;
+}
+
+button:hover{
+    cursor: pointer;
+}
+
+nav div:hover{
+    cursor: pointer;
+}
+
+#container{
+    height: calc(100vh - 110px);
+    background-color: var(--light2);
+    padding: 20px;
+}
+
+#app{
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    border-radius: 10px;
+    background-color: var(--light3);
+    padding: 20px;
+}
+/* 
+.table-content{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+}
+
+.table-headers{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+} */
+
+
+.table {
+    width: 100%;
+    background: var(--light1);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.table-headers {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--dark1);
+    color: var(--light1);
+    padding: 12px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.table-content {
+    display: grid;
+}
+
+.table-content > * {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 12px;
+    border-bottom: 1px solid var(--light3);
+    align-items: center;
+}
+
+.table-content > *:nth-child(even) {
+    background: var(--light2);
+}
+
+.table-content strong {
+    color: var(--dark1);
+}
+
+.table-content span:last-child {
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.metadata{
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.icon{
+    border-radius: 50%;
+    height: 30px;
+    width: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.icon-enabled:hover{
+    background-color: var(--accent);
+    cursor: pointer;
+}
+
+.icon-disabled{
+    color: var(--dark2);
+}

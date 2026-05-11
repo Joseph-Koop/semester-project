@@ -299,7 +299,7 @@ func (a *applicationDependencies) listClassesHandler(w http.ResponseWriter, r *h
 	}
 
 	queryParametersData.Filters.Page = a.getSingleIntegerParameter(queryParameters, "page", 1, v)
-	queryParametersData.Filters.PageSize = a.getSingleIntegerParameter(queryParameters, "page_size", 10, v)
+	queryParametersData.Filters.PageSize = a.getSingleIntegerParameter(queryParameters, "page_size", 5, v)
 
 	queryParametersData.Filters.Sort = a.getSingleQueryParameter(queryParameters, "sort", "id")
 	queryParametersData.Filters.SortSafeList = []string{"id", "capacity_limit", "name", "-id", "-capacity_limit", "-name"}
